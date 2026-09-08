@@ -7,6 +7,12 @@ import ThemeToggle from './ThemeToggle';
 
 const socket = io('http://localhost:3001');
 
+const LANG_MAP = {
+  sat: { name: 'Santhali', native: 'ᱥᱟᱱᱛᱟᱲᱤ', hindi: 'संथाली', font: 'font-ol-chiki' },
+  hoc: { name: 'Ho', native: '𑢹𑣉𑣉', hindi: 'हो', font: 'font-warang-chiti' },
+  mun: { name: 'Mundari', native: 'मुण्डारी', hindi: 'मुण्डारी', font: 'font-devanagari' }
+};
+
 function TeacherDashboard() {
   const navigate = useNavigate();
   const [roomCode, setRoomCode] = useState(null);
@@ -204,7 +210,14 @@ function TeacherDashboard() {
               doubts.map((doubt, idx) => (
                 <div key={idx} className="bg-rose-50 dark:bg-slate-800/80 rounded-2xl p-4 border border-rose-200 dark:border-rose-900/50 transition-colors">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-rose-700 dark:text-rose-300">{doubt.student.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-rose-700 dark:text-rose-300">{doubt.student.name}</span>
+                      {doubt.student.motherTongue && (
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 ${LANG_MAP[doubt.student.motherTongue]?.font || ''}`}>
+                          {LANG_MAP[doubt.student.motherTongue]?.native || doubt.student.motherTongue}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs font-bold px-2 py-1 bg-white dark:bg-slate-900 text-rose-500 dark:text-rose-400 rounded-lg border dark:border-rose-900/40">Raised Hand</span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">They had a doubt when you said:</p>
@@ -233,12 +246,18 @@ function TeacherDashboard() {
             {students.length === 0 ? (
               <p className="text-slate-400 dark:text-slate-500 text-center py-4 text-sm">Waiting for students to join...</p>
             ) : (
-              students.map(s => (
-                <div key={s.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 border border-transparent dark:border-slate-700/60 p-3 rounded-xl transition-colors">
-                  <span className="font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-300 bg-white dark:bg-slate-900 border dark:border-slate-800 px-2 py-1 rounded-md shadow-sm">{s.motherTongue}</span>
-                </div>
-              ))
+              students.map(s => {
+                const lang = LANG_MAP[s.motherTongue] || { name: s.motherTongue, native: s.motherTongue, hindi: s.motherTongue, font: '' };
+                return (
+                  <div key={s.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 border border-transparent dark:border-slate-700/60 p-3 rounded-xl transition-colors">
+                    <span className="font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border dark:border-slate-800 px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1.5">
+                      <span className={`${lang.font} text-emerald-600 dark:text-emerald-400 font-bold`}>{lang.native}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">({lang.hindi})</span>
+                    </span>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
