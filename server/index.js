@@ -119,7 +119,25 @@ io.on('connection', (socket) => {
     });
   });
 
-  // 5. Handle disconnections
+  // 5. Teacher explicitly ends the live class
+  socket.on('end-room', ({ roomCode }, callback) => {
+    if (!rooms.has(roomCode)) {
+      if (callback) callback({ success: false, message: 'Room not found' });
+      return;
+    }
+
+    const room = rooms.get(roomCode);
+    if (room.teacherId === socket.id) {
+      console.log(`[Room] ${roomCode} ended by Teacher ${room.teacherName}`);
+      io.to(roomCode).emit('teacher-disconnected');
+      rooms.delete(roomCode);
+      if (callback) callback({ success: true });
+    } else {
+      if (callback) callback({ success: false, message: 'Unauthorized' });
+    }
+  });
+
+  // 6. Handle disconnections
   socket.on('disconnect', () => {
     console.log(`[-] User disconnected: ${socket.id}`);
     
