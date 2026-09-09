@@ -1,2 +1,6 @@
 app/node_modules
 server/node_modules
+# Google Gemini API Key for PalashSetu Speech-to-Text & Real-time Translation
+# Get your free key at: https://aistudio.google.com/
+GEMINI_API_KEY=your_api_key_here
+PORT=3001
