@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { Users, User, Mic } from 'lucide-react';
+import { Mic } from 'lucide-react';
+import { AdultTeacherIcon, ChildStudentIcon } from './components/icons/RoleIcons';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import TeacherDashboard from './components/TeacherDashboard';
@@ -27,28 +28,34 @@ function RoleSelection() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Teacher Card */}
+          {/* Teacher Card (Adult outline) */}
           <button 
             onClick={() => navigate('/teacher')}
-            className="flex flex-col items-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 hover:shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-transparent hover:border-emerald-500 dark:border-slate-800 dark:hover:border-emerald-500 group cursor-pointer"
+            className="flex flex-col items-center p-10 sm:p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 hover:shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-transparent hover:border-emerald-500 dark:border-slate-800 dark:hover:border-emerald-500 group cursor-pointer text-center"
           >
-            <div className="w-32 h-32 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 transition-colors">
-              <Users className="w-16 h-16 text-emerald-600 dark:text-emerald-400" />
+            <div className="w-32 h-32 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 transition-all duration-300 shadow-md shadow-emerald-600/10">
+              <AdultTeacherIcon className="w-24 h-24 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform duration-300" />
             </div>
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Teacher</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium transition-colors">Host a class in Hindi</p>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Teacher</h2>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Host</span>
+            </div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium transition-colors">Host a class in Hindi or English</p>
           </button>
 
-          {/* Student Card */}
+          {/* Student Card (Child outline) */}
           <button 
             onClick={() => navigate('/student')}
-            className="flex flex-col items-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 hover:shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-transparent hover:border-amber-500 dark:border-slate-800 dark:hover:border-amber-500 group cursor-pointer"
+            className="flex flex-col items-center p-10 sm:p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 hover:shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-transparent hover:border-amber-500 dark:border-slate-800 dark:hover:border-amber-500 group cursor-pointer text-center"
           >
-            <div className="w-32 h-32 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/60 transition-colors">
-              <User className="w-16 h-16 text-amber-600 dark:text-amber-400" />
+            <div className="w-32 h-32 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/60 transition-all duration-300 shadow-md shadow-amber-600/10">
+              <ChildStudentIcon className="w-24 h-24 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform duration-300" />
             </div>
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Student</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium transition-colors">Join in your language</p>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Student</h2>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 uppercase tracking-wider">Learn</span>
+            </div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium transition-colors">Join in your tribal language</p>
           </button>
         </div>
       </div>

@@ -48,6 +48,14 @@ function TeacherDashboard() {
   const [roomCode, setRoomCode] = useState(null);
   const [students, setStudents] = useState([]);
   const [doubts, setDoubts] = useState([]);
+  const [teacherLang, setTeacherLang] = useState('hi'); // 'hi' or 'en'
+
+  const teacherLangRef = useRef(teacherLang);
+  const isRecordingRef = useRef(false);
+
+  useEffect(() => {
+    teacherLangRef.current = teacherLang;
+  }, [teacherLang]);
 
   // Voice recording & transcription states
   const [isRecording, setIsRecording] = useState(false);
@@ -172,7 +180,7 @@ function TeacherDashboard() {
   };
 
   const createRoom = () => {
-    socket.emit('create-room', { teacherName: 'Teacher', language: 'hi' }, (res) => {
+    socket.emit('create-room', { teacherName: 'Teacher', language: teacherLang }, (res) => {
       if (res.success) {
         setRoomCode(res.roomCode);
       }
@@ -185,6 +193,7 @@ function TeacherDashboard() {
     );
     if (!confirmEnd) return;
 
+    isRecordingRef.current = false;
     if (isRecording) {
       await stopRecording();
       setIsRecording(false);
@@ -404,11 +413,45 @@ function TeacherDashboard() {
         </div>
 
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 text-center border border-transparent dark:border-slate-800 transition-colors">
-          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
-            <Users className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors shadow-sm">
+            <AdultTeacherIcon className="w-16 h-16 text-emerald-600 dark:text-emerald-400" />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Teacher Mode</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 transition-colors">Start a new class lobby and share the code with your students.</p>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 transition-colors">Start a new class lobby and share the code with your students.</p>
+          
+          {/* Pre-lobby Speaking Language Selection */}
+          <div className="mb-6 text-left">
+            <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 text-center">
+              Choose Speaking Language
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setTeacherLang('hi')}
+                className={`py-2 px-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  teacherLang === 'hi'
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🇮🇳</span>
+                <span>हिन्दी (Hindi)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTeacherLang('en')}
+                className={`py-2 px-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  teacherLang === 'en'
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🌐</span>
+                <span>English</span>
+              </button>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-3">
             <button 
               onClick={createRoom}
@@ -789,7 +832,12 @@ function TeacherDashboard() {
                 const lang = LANG_MAP[s.motherTongue] || { name: s.motherTongue, native: s.motherTongue, hindi: s.motherTongue, font: '' };
                 return (
                   <div key={s.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 border border-transparent dark:border-slate-700/60 p-3 rounded-xl transition-colors">
-                    <span className="font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center shrink-0">
+                        <ChildStudentIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />
+                      </div>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
+                    </div>
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border dark:border-slate-800 px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1.5">
                       <span className={`${lang.font} text-emerald-600 dark:text-emerald-400 font-bold`}>{lang.native}</span>
                       <span className="text-[10px] text-slate-400 dark:text-slate-500">({lang.hindi})</span>

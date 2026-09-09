@@ -297,7 +297,11 @@ io.on('connection', (socket) => {
     if (callback) {
       callback({ 
         success: true, 
-        roomDetails: { teacherName: room.teacherName, students: room.students } 
+        roomDetails: { 
+          teacherName: room.teacherName, 
+          students: room.students,
+          language: room.language || 'hi'
+        } 
       });
     }
   });

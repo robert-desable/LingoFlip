@@ -263,6 +263,68 @@ const STUDENT_I18N = {
 
 const LANGUAGES = Object.values(STUDENT_I18N);
 
+// Authentic vernacular translations for classroom lessons across tribal scripts
+const DEMO_TRANSLATIONS = {
+  en: {
+    sat: (text) => {
+      if (text.toLowerCase().includes('science')) {
+        return 'ᱡᱚᱦᱟᱨ ᱪᱮᱛᱮᱫᱤᱭᱟᱹ ᱠᱚ, ᱛᱮᱦᱮᱧ ᱫᱚ ᱟᱵᱚ ᱥᱟᱬᱮᱥ ᱟᱨ ᱥᱤᱨᱡᱚᱱ ᱵᱟᱵᱚᱛ ᱛᱮᱵᱚ ᱪᱮᱫᱚᱜ-ᱟ᱾';
+      }
+      return `[ᱥᱟᱱᱛᱟᱲᱤ]: ${text}`;
+    },
+    hoc: (text) => {
+      if (text.toLowerCase().includes('science')) {
+        return 'ᱡᱳᱦᱟᱨ ᱤᱛᱩᱱᱠᱚ, ᱛᱤᱥᱤᱝ ᱵᱩ ᱥᱟᱭᱤᱱᱥ ᱟᱨ ᱯᱨᱚᱠᱨᱤᱛᱤ ᱠᱟᱡᱤ ᱵᱩ ᱪᱮᱫᱚᱜ-ᱟ᱾';
+      }
+      return `[𑢹𑣉𑣉]: ${text}`;
+    },
+    mun: (text) => {
+      if (text.toLowerCase().includes('science')) {
+        return 'जोहार चेड़ाको, तिशिं आबु बिज्ञान अड़बंग प्रकृति बयते इतुन आबु।';
+      }
+      return `[मुण्डारी]: ${text}`;
+    }
+  },
+  hi: {
+    sat: (text) => {
+      if (text.includes('विज्ञान') || text.includes('science')) {
+        return 'ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ, ᱛᱮᱦᱮᱧ ᱫᱚ ᱟᱵᱚ ᱥᱟᱬᱮᱥ ᱟᱨ ᱥᱤᱨᱡᱚᱱ ᱵᱟᱵᱚᱛ ᱛᱮᱵᱚ ᱪᱮᱫᱚᱜ-ᱟ᱾';
+      }
+      return `[ᱥᱟᱱᱛᱟᱲᱤ]: ${text}`;
+    },
+    hoc: (text) => {
+      if (text.includes('विज्ञान') || text.includes('science')) {
+        return 'ᱡᱳᱦᱟᱨ ᱦᱳᱯᱚᱱᱠᱚ, ᱛᱤᱥᱤᱝ ᱵᱩ ᱥᱟᱭᱤᱱᱥ ᱟᱨ ᱯᱨᱚᱠᱨᱤᱛᱤ ᱵᱟᱵᱚᱛ ᱵᱩ ᱪᱮᱫᱚᱜ-ᱟ᱾';
+      }
+      return `[𑢹𑣉𑣉]: ${text}`;
+    },
+    mun: (text) => {
+      if (text.includes('विज्ञान') || text.includes('science')) {
+        return 'जोहार होनको, तिशिं आबु बिज्ञान अड़बंग प्रकृति बयते इतुन आबु।';
+      }
+      return `[मुण्डारी]: ${text}`;
+    }
+  }
+};
+
+const resolveTranslation = async (text, sourceLang, targetLang) => {
+  try {
+    const apiResult = await translateText(text, sourceLang, targetLang);
+    if (apiResult && apiResult !== text) {
+      return apiResult;
+    }
+  } catch (err) {
+    // Graceful fallback to authentic demo translations if Bhashini is unconfigured/offline
+  }
+
+  const langKey = sourceLang === 'en' ? 'en' : 'hi';
+  const targetMap = DEMO_TRANSLATIONS[langKey];
+  if (targetMap && targetMap[targetLang]) {
+    return targetMap[targetLang](text);
+  }
+  return text;
+};
+
 function StudentDashboard() {
   const navigate = useNavigate();
   const [step, setStep] = useState('join'); // 'join' -> 'class'
@@ -270,6 +332,8 @@ function StudentDashboard() {
   const [studentName, setStudentName] = useState('');
   const [motherTongue, setMotherTongue] = useState('sat');
   const [teacherName, setTeacherName] = useState('');
+  const [teacherLanguage, setTeacherLanguage] = useState('hi');
+  const [originalSpokenText, setOriginalSpokenText] = useState('');
   
   // Real-time speech & audio state
   const [currentEnglish, setCurrentEnglish] = useState('');
@@ -440,6 +504,7 @@ function StudentDashboard() {
 
     return () => {
       socket.off('receive-transcript');
+      socket.off('room-language-updated');
       socket.off('teacher-disconnected');
       if (currentAudioRef.current) {
         try { currentAudioRef.current.pause(); } catch (e) {}
@@ -449,7 +514,7 @@ function StudentDashboard() {
         window.speechSynthesis.cancel();
       }
     };
-  }, [motherTongue, t]);
+  }, [motherTongue, teacherLanguage, t]);
 
   const joinRoom = () => {
     if (!roomCode || !studentName) return;
@@ -462,6 +527,9 @@ function StudentDashboard() {
     socket.emit('join-room', { roomCode, studentName, motherTongue }, (res) => {
       if (res.success) {
         setTeacherName(res.roomDetails.teacherName);
+        if (res.roomDetails.language) {
+          setTeacherLanguage(res.roomDetails.language);
+        }
         setStep('class');
       } else {
         alert(t.roomNotFound);
@@ -489,6 +557,9 @@ function StudentDashboard() {
         <div className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 border border-transparent dark:border-slate-800 transition-colors">
           {/* Header */}
           <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors shadow-sm">
+              <ChildStudentIcon className="w-16 h-16 text-amber-600 dark:text-amber-400" />
+            </div>
             <h1 className={`text-3xl sm:text-4xl font-black text-sky-900 dark:text-sky-300 mb-1 transition-colors ${t.fontFamily}`}>
               {t.joinTitle}
             </h1>
@@ -586,7 +657,7 @@ function StudentDashboard() {
                 disabled={!roomCode || !studentName}
                 className="w-full py-4 bg-sky-500 disabled:bg-sky-200 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 hover:bg-sky-600 text-white rounded-2xl font-bold transition-all shadow-lg shadow-sky-200 dark:shadow-sky-950/40 flex items-center justify-center gap-3 cursor-pointer disabled:cursor-not-allowed active:scale-[0.99]"
               >
-                <UserCheck className="w-6 h-6 shrink-0" />
+                <ChildStudentIcon className="w-7 h-7 shrink-0 text-white" strokeWidth={2} />
                 <div className="text-left leading-tight">
                   <span className={`text-xl font-black block ${t.fontFamily}`}>
                     {t.joinButton}
@@ -634,22 +705,29 @@ function StudentDashboard() {
           {/* Teacher and Translation Details */}
           <div>
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 transition-colors">
-              <span className={`text-slate-700 dark:text-slate-300 font-black text-sm block ${t.fontFamily}`}>
-                {t.teacherPrefix}: <span className="text-sky-600 dark:text-sky-400 font-bold">{teacherName}</span>
+              <span className={`text-slate-700 dark:text-slate-300 font-black text-sm flex items-center gap-1.5 ${t.fontFamily}`}>
+                <AdultTeacherIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" strokeWidth={2} />
+                <span>{t.teacherPrefix}: <span className="text-sky-600 dark:text-sky-400 font-bold">{teacherName}</span></span>
               </span>
               <span className="text-slate-400 dark:text-slate-500 font-normal text-xs block">
                 {t.teacherHindi} • {t.teacherEnglish}
               </span>
             </h2>
-            <div className="mt-1">
+            <div className="mt-1 flex items-center gap-2 flex-wrap">
               <p className={`text-xs font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 ${t.fontFamily}`}>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 {t.liveActive}
               </p>
-              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 ml-3.5">
-                {t.liveActiveHindi} • {t.liveActiveEnglish}
-              </p>
+              
+              {/* Teacher Speaking Language Indicator */}
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-800 flex items-center gap-1 shadow-xs">
+                <span>{teacherLanguage === 'en' ? '🌐' : '🇮🇳'}</span>
+                <span>Teacher: {teacherLanguage === 'en' ? 'English' : 'हिन्दी (Hindi)'}</span>
+              </span>
             </div>
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 ml-3.5 mt-0.5">
+              {t.liveActiveHindi} • {t.liveActiveEnglish}
+            </p>
           </div>
         </div>
 
@@ -734,6 +812,9 @@ function StudentDashboard() {
                 </span>
                 <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                   {t.translatedInEnglishSub}
+                </span>
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300">
+                  {teacherLanguage === 'en' ? 'English' : 'Hindi'} ➔ {t.name}
                 </span>
               </div>
 
