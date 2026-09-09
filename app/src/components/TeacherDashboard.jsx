@@ -1,3 +1,4 @@
+import { BACKEND_URL } from "../config";
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -26,7 +27,7 @@ import { translateHindiToEnglish } from '../services/translator';
 import { startRecording, stopRecording } from '../services/audioRecorder';
 import ThemeToggle from './ThemeToggle';
 
-const socket = io('http://localhost:3001');
+const socket = io(BACKEND_URL);
 
 const LANG_MAP = {
   sat: { name: 'Santhali', native: 'ᱥᱟᱱᱛᱟᱲᱤ', hindi: 'संथाली', font: 'font-ol-chiki' },
@@ -87,7 +88,7 @@ function TeacherDashboard() {
   // Fetch initial API key status and sync with localStorage
   const checkApiKeyStatus = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/key-status');
+      const res = await fetch(`${BACKEND_URL}/api/key-status`);
       if (res.ok) {
         const data = await res.json();
         if (data.hasKey) {
@@ -104,7 +105,7 @@ function TeacherDashboard() {
     const savedLocalKey = localStorage.getItem('palash_gemini_key');
     if (savedLocalKey && savedLocalKey.length > 8) {
       try {
-        const syncRes = await fetch('http://localhost:3001/api/set-api-key', {
+        const syncRes = await fetch(`${BACKEND_URL}/api/set-api-key`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ apiKey: savedLocalKey })
@@ -152,7 +153,7 @@ function TeacherDashboard() {
     setKeySaveSuccess('');
 
     try {
-      const res = await fetch('http://localhost:3001/api/set-api-key', {
+      const res = await fetch(`${BACKEND_URL}/api/set-api-key`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey: key })

@@ -1,10 +1,11 @@
+import { BACKEND_URL } from "../config";
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { Hand, Volume2, UserCheck, AlertTriangle, ArrowLeft, LogOut, RotateCcw, Zap, Sparkles, VolumeX } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
-const socket = io('http://localhost:3001');
+const socket = io(BACKEND_URL);
 
 const STUDENT_I18N = {
   sat: {
@@ -386,7 +387,7 @@ function StudentDashboard() {
 
     // Try Engine A: High-fidelity natural voice from server /api/tts via HTML5 Audio
     try {
-      const audioUrl = `http://localhost:3001/api/tts?text=${encodeURIComponent(text)}&lang=en&t=${Date.now()}`;
+      const audioUrl = `${BACKEND_URL}/api/tts?text=${encodeURIComponent(text)}&lang=en&t=${Date.now()}`;
       const audio = new Audio(audioUrl);
       currentAudioRef.current = audio;
 
