@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
-import { Hand, Volume2, UserCheck, AlertTriangle, ArrowLeft, LogOut } from 'lucide-react';
-import { processAudioPipeline } from '../services/ai4bharat';
+import { Hand, Volume2, UserCheck, AlertTriangle, ArrowLeft, LogOut, RotateCcw, Zap, Sparkles, VolumeX } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 const socket = io('http://localhost:3001');
@@ -74,7 +73,23 @@ const STUDENT_I18N = {
     doubtWait: 'ᱫᱟᱭᱟᱠᱟᱛᱮ ᱛᱟᱺᱜᱤ ᱢᱮ',
     doubtWaitHindi: 'कृपया प्रतीक्षा करें',
     doubtWaitEnglish: 'Please wait',
-    teacherEndedAlert: 'ᱜᱩᱨᱩ ᱜᱚᱢᱠᱮ ᱠᱞᱟᱥ ᱮ ᱢᱩᱪᱟᱹᱫ ᱠᱮᱫ-ᱟ᱾\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.'
+    teacherEndedAlert: 'ᱜᱩᱨᱩ ᱜᱚᱢᱠᱮ ᱠᱞᱟᱥ ᱮ ᱢᱩᱪᱟᱹᱫ ᱠᱮᱫ-ᱟ᱾\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
+    // Audio Pipeline Vernacular Labels
+    englishAudioTitle: 'ᱤᱝᱨᱟᱹᱡᱤ ᱨᱟᱹᱲ',
+    englishAudioTitleHindi: 'अंग्रेजी ऑडियो',
+    englishAudioTitleEnglish: 'English Audio',
+    replayAudio: 'ᱨᱟᱹᱲ ᱟᱸᱡᱚᱢ ᱨᱩᱣᱟᱹᱲ',
+    replayAudioHindi: 'ऑडियो फिर से सुनें',
+    replayAudioEnglish: 'Replay Audio',
+    speakingNow: 'ᱨᱟᱹᱲ ᱟᱸᱡᱚᱢᱚᱜ ᱠᱟᱱᱟ...',
+    speakingNowHindi: 'ऑडियो बज रहा है...',
+    speakingNowEnglish: 'Playing audio...',
+    teacherSpokeHindi: 'ᱜᱩᱨᱩ ᱜᱚᱢᱠᱮ ᱦᱤᱱᱫᱤ ᱛᱮ ᱢᱮᱱ ᱠᱮᱫ-ᱟ',
+    teacherSpokeHindiSub: 'शिक्षक ने हिंदी में कहा • Teacher spoke in Hindi',
+    translatedInEnglish: 'ᱤᱝᱨᱟᱹᱡᱤ ᱛᱮ ᱛᱚᱨᱡᱚᱢᱟ ᱮᱱᱟ',
+    translatedInEnglishSub: 'अंग्रेजी अनुवाद (ऑडियो) • English Translation (Audio)',
+    realtimeLatency: 'ᱥᱚᱡᱷᱮ ᱛᱚᱨᱡᱚᱢᱟ',
+    realtimeLatencySub: 'रियल-टाइम • Real-time'
   },
   hoc: {
     code: 'hoc',
@@ -142,7 +157,23 @@ const STUDENT_I18N = {
     doubtWait: 'दयाकाते तांगी मे',
     doubtWaitHindi: 'कृपया प्रतीक्षा करें',
     doubtWaitEnglish: 'Please wait',
-    teacherEndedAlert: 'माचेत क्लास मुचाद केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.'
+    teacherEndedAlert: 'माचेत क्लास मुचाद केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
+    // Audio Pipeline Vernacular Labels
+    englishAudioTitle: 'इन्गराजि अडियो',
+    englishAudioTitleHindi: 'अंग्रेजी ऑडियो',
+    englishAudioTitleEnglish: 'English Audio',
+    replayAudio: 'अडियो रूवाड़ आंजोम',
+    replayAudioHindi: 'ऑडियो फिर से सुनें',
+    replayAudioEnglish: 'Replay Audio',
+    speakingNow: 'अडियो आंजोमोः तना...',
+    speakingNowHindi: 'ऑडियो बज रहा है...',
+    speakingNowEnglish: 'Playing audio...',
+    teacherSpokeHindi: 'माचेत हिंदी ते काजी केदाः',
+    teacherSpokeHindiSub: 'शिक्षक ने हिंदी में कहा • Teacher spoke in Hindi',
+    translatedInEnglish: 'इन्गराजि ते तर्जुमा एना',
+    translatedInEnglishSub: 'अंग्रेजी अनुवाद (ऑडियो) • English Translation (Audio)',
+    realtimeLatency: 'सोज्हे तर्जुमा',
+    realtimeLatencySub: 'रियल-टाइम • Real-time'
   },
   mun: {
     code: 'mun',
@@ -210,7 +241,23 @@ const STUDENT_I18N = {
     doubtWait: 'दयाकाते तांगी मे',
     doubtWaitHindi: 'कृपया प्रतीक्षा करें',
     doubtWaitEnglish: 'Please wait',
-    teacherEndedAlert: 'माचेत कक्षा समाप्त केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.'
+    teacherEndedAlert: 'माचेत कक्षा समाप्त केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
+    // Audio Pipeline Vernacular Labels
+    englishAudioTitle: 'इंग्लिश ऑडियो',
+    englishAudioTitleHindi: 'अंग्रेजी ऑडियो',
+    englishAudioTitleEnglish: 'English Audio',
+    replayAudio: 'ऑडियो रूवाड़ आंजोम',
+    replayAudioHindi: 'ऑडियो फिर से सुनें',
+    replayAudioEnglish: 'Replay Audio',
+    speakingNow: 'ऑडियो बज तना...',
+    speakingNowHindi: 'ऑडियो बज रहा है...',
+    speakingNowEnglish: 'Playing audio...',
+    teacherSpokeHindi: 'माचेत हिंदी ते रोड़ केदाः',
+    teacherSpokeHindiSub: 'शिक्षक ने हिंदी में कहा • Teacher spoke in Hindi',
+    translatedInEnglish: 'इंग्लिश ते अनुवाद एना',
+    translatedInEnglishSub: 'अंग्रेजी अनुवाद (ऑडियो) • English Translation (Audio)',
+    realtimeLatency: 'सोज्हे अनुवाद',
+    realtimeLatencySub: 'रियल-टाइम • Real-time'
   }
 };
 
@@ -224,25 +271,169 @@ function StudentDashboard() {
   const [motherTongue, setMotherTongue] = useState('sat');
   const [teacherName, setTeacherName] = useState('');
   
-  const [incomingText, setIncomingText] = useState('');
+  // Real-time speech & audio state
+  const [currentEnglish, setCurrentEnglish] = useState('');
+  const [currentHindi, setCurrentHindi] = useState('');
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [latencyMs, setLatencyMs] = useState(null);
   const [isDoubtRaised, setIsDoubtRaised] = useState(false);
 
   // Active language dictionary for dynamic vernacular UI rendering
   const t = STUDENT_I18N[motherTongue] || STUDENT_I18N.sat;
 
+  // Audio Player References
+  const currentAudioRef = useRef(null);
+  const activeUtteranceRef = useRef(null);
+
+  // Prime voices when component mounts
   useEffect(() => {
-    socket.on('receive-transcript', async (transcript) => {
-      // Show translating status with mother tongue primary
-      setIncomingText(`[${t.translatingText}] ${transcript.text}`);
-      
-      setTimeout(() => {
-        setIncomingText(transcript.text);
-      }, 1000);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
+
+  /**
+   * Plays translated English text instantly through student speakers using Dual-Engine Architecture:
+   * 1. Primary Engine: High-fidelity natural MP3 audio streamed from server (/api/tts)
+   * 2. Secondary Engine: Robust local window.speechSynthesis with garbage-collection protection & auto-resume
+   */
+  const playEnglishAudio = async (textToPlay) => {
+    const text = (textToPlay || '').trim();
+    if (!text) return;
+
+    // 1. Stop any currently playing audio stream or speech
+    if (currentAudioRef.current) {
+      try {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+      } catch (e) {}
+      currentAudioRef.current = null;
+    }
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    }
+
+    setIsPlayingAudio(true);
+
+    // Try Engine A: High-fidelity natural voice from server /api/tts via HTML5 Audio
+    try {
+      const audioUrl = `http://localhost:3001/api/tts?text=${encodeURIComponent(text)}&lang=en&t=${Date.now()}`;
+      const audio = new Audio(audioUrl);
+      currentAudioRef.current = audio;
+
+      audio.onended = () => {
+        setIsPlayingAudio(false);
+        currentAudioRef.current = null;
+      };
+
+      audio.onerror = (e) => {
+        console.warn('[Audio Player] Server TTS stream failed or offline, falling back to Web Speech API:', e);
+        currentAudioRef.current = null;
+        speakWithWebSpeechFallback(text);
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+      return;
+    } catch (audioErr) {
+      console.warn('[Audio Player] HTML5 Audio play error, trying Web Speech fallback:', audioErr);
+      speakWithWebSpeechFallback(text);
+    }
+  };
+
+  /**
+   * Fallback engine using Web Speech API with Chromium deadlock and GC protection
+   */
+  const speakWithWebSpeechFallback = (text) => {
+    if (!('speechSynthesis' in window)) {
+      setIsPlayingAudio(false);
+      return;
+    }
+
+    try {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+
+      // Keep persistent reference to prevent V8 garbage collector from prematurely killing playback
+      activeUtteranceRef.current = utterance;
+      window._activeUtterance = utterance;
+
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        const enVoice = 
+          voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('David'))) ||
+          voices.find(v => v.lang.startsWith('en'));
+        if (enVoice) {
+          utterance.voice = enVoice;
+        }
+      }
+
+      utterance.onstart = () => {
+        setIsPlayingAudio(true);
+      };
+
+      utterance.onend = () => {
+        setIsPlayingAudio(false);
+        activeUtteranceRef.current = null;
+        window._activeUtterance = null;
+      };
+
+      utterance.onerror = (err) => {
+        console.warn('Speech synthesis fallback note:', err);
+        setIsPlayingAudio(false);
+        activeUtteranceRef.current = null;
+        window._activeUtterance = null;
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.error('Web Speech fallback failed:', err);
+      setIsPlayingAudio(false);
+    }
+  };
+
+  useEffect(() => {
+    socket.on('receive-transcript', (data) => {
+      const eng = data.englishText || data.text || '';
+      const hin = data.hindiText || data.text || '';
+      const receivedAt = Date.now();
+      const elapsed = data.timestamp ? (receivedAt - data.timestamp) : null;
+
+      setCurrentEnglish(eng);
+      setCurrentHindi(hin);
+      setLatencyMs(elapsed);
+
+      // Instant English audio playback via dual-engine player
+      if (eng) {
+        playEnglishAudio(eng);
+      }
     });
 
     socket.on('teacher-disconnected', () => {
       alert(t.teacherEndedAlert);
-      setIncomingText('');
+      if (currentAudioRef.current) {
+        try { currentAudioRef.current.pause(); } catch (e) {}
+        currentAudioRef.current = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setCurrentEnglish('');
+      setCurrentHindi('');
+      setIsPlayingAudio(false);
       setIsDoubtRaised(false);
       setStep('join');
     });
@@ -250,12 +441,24 @@ function StudentDashboard() {
     return () => {
       socket.off('receive-transcript');
       socket.off('teacher-disconnected');
+      if (currentAudioRef.current) {
+        try { currentAudioRef.current.pause(); } catch (e) {}
+        currentAudioRef.current = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, [motherTongue, t]);
 
   const joinRoom = () => {
     if (!roomCode || !studentName) return;
     
+    // User interaction primes audio context
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.resume();
+    }
+
     socket.emit('join-room', { roomCode, studentName, motherTongue }, (res) => {
       if (res.success) {
         setTeacherName(res.roomDetails.teacherName);
@@ -279,7 +482,6 @@ function StudentDashboard() {
   if (step === 'join') {
     return (
       <div className="min-h-screen bg-sky-50 dark:bg-slate-950 flex items-center justify-center p-4 relative transition-colors duration-200">
-        {/* Theme Switcher in top right */}
         <div className="absolute top-6 right-6 z-10">
           <ThemeToggle showLabel />
         </div>
@@ -413,7 +615,7 @@ function StudentDashboard() {
     );
   }
 
-  // Class Interface (Highly expressive, minimal clutter for students)
+  // Class Interface (Highly expressive, vernacular-first with live audio pipeline)
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col p-4 md:p-8 transition-colors duration-200">
       {/* Header */}
@@ -452,13 +654,27 @@ function StudentDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => playEnglishAudio("Sound check: audio feedback is active and working perfectly.")}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+            title="Click to test audio playback through your speakers"
+          >
+            <Volume2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <span>Test Sound</span>
+          </button>
+
           <ThemeToggle />
 
           <button
             onClick={() => {
               if (window.confirm(t.leaveConfirm)) {
+                if ('speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                }
                 setStep('join');
-                setIncomingText('');
+                setCurrentEnglish('');
+                setCurrentHindi('');
+                setIsPlayingAudio(false);
                 setIsDoubtRaised(false);
               }
             }}
@@ -473,41 +689,111 @@ function StudentDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area - Large Transcript Display */}
-      <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm dark:shadow-slate-950/50 border-2 border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center mb-6 relative overflow-hidden transition-colors">
-        {/* Animated speaking indicator */}
-        <div className="absolute top-8 right-8 flex flex-col items-end gap-0.5 bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40 px-4 py-2 rounded-2xl transition-colors shadow-sm">
-          <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-black">
-            <Volume2 className="w-5 h-5 animate-pulse shrink-0" />
-            <span className={`text-sm ${t.fontFamily}`}>{t.listening}</span>
-          </div>
-          <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
-            {t.listeningHindi} • {t.listeningEnglish}
-          </span>
-        </div>
-
-        <div className="max-w-3xl w-full text-center">
-          {incomingText ? (
-            <div className="space-y-4">
-              <div className="inline-block px-4 py-1.5 bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40 rounded-full">
-                <span className={`text-xs font-black text-sky-700 dark:text-sky-300 ${t.fontFamily}`}>
-                  {t.teacherSaid}
+      {/* Main Content Area - Large Translated Speech & Real-Time Audio */}
+      <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-10 shadow-sm dark:shadow-slate-950/50 border-2 border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center mb-6 relative overflow-hidden transition-colors">
+        
+        {/* Animated Live Audio Indicator */}
+        <div className="absolute top-6 right-6 flex flex-col items-end gap-1">
+          {isPlayingAudio ? (
+            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-4 py-2 rounded-2xl shadow-sm transition-all animate-pulse">
+              <div className="flex items-center gap-1">
+                <span className="w-1.5 h-4 bg-emerald-500 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-6 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.15s]"></span>
+                <span className="w-1.5 h-3 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.3s]"></span>
+              </div>
+              <div className="text-right">
+                <span className={`text-xs font-black text-emerald-700 dark:text-emerald-300 block ${t.fontFamily}`}>
+                  {t.speakingNow}
                 </span>
-                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 ml-2">
-                  • {t.teacherSaidSub}
+                <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 block">
+                  {t.speakingNowHindi} • {t.speakingNowEnglish}
                 </span>
               </div>
-              <h1 className={`text-4xl md:text-5xl font-black text-slate-800 dark:text-slate-100 leading-tight transition-colors ${t.fontFamily}`}>
-                {incomingText}
-              </h1>
+            </div>
+          ) : (
+            <div className="flex flex-col items-end bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40 px-3.5 py-1.5 rounded-2xl transition-colors shadow-sm">
+              <div className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-bold">
+                <Volume2 className="w-4 h-4 shrink-0" />
+                <span className={`text-xs ${t.fontFamily}`}>{t.listening}</span>
+              </div>
+              <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500">
+                {t.listeningHindi} • {t.listeningEnglish}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Central Translation Display */}
+        <div className="max-w-3xl w-full text-center py-6">
+          {currentEnglish ? (
+            <div className="space-y-6">
+              {/* Mother tongue header badge */}
+              <div className="inline-flex flex-col items-center gap-0.5 px-5 py-2 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 rounded-2xl">
+                <span className={`text-sm font-black text-sky-800 dark:text-sky-200 ${t.fontFamily}`}>
+                  {t.translatedInEnglish}
+                </span>
+                <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+                  {t.translatedInEnglishSub}
+                </span>
+              </div>
+
+              {/* Translated English Speech (Spoken to student) */}
+              <div className="p-6 md:p-8 bg-sky-50/50 dark:bg-slate-800/60 border-2 border-sky-100 dark:border-slate-700 rounded-3xl shadow-sm relative">
+                {latencyMs !== null && (
+                  <div className="absolute -top-3.5 right-6 px-3 py-1 bg-emerald-500 text-white rounded-full text-xs font-bold shadow-md flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    <span>{latencyMs}ms</span>
+                  </div>
+                )}
+
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight">
+                  "{currentEnglish}"
+                </h1>
+
+                {/* Original Hindi subtitle (Teacher's speech) */}
+                {currentHindi && (
+                  <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col items-center">
+                    <span className={`text-xs font-black text-slate-600 dark:text-slate-400 ${t.fontFamily}`}>
+                      {t.teacherSpokeHindi}:
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mb-1">
+                      {t.teacherSpokeHindiSub}
+                    </span>
+                    <p className="text-lg md:text-xl font-bold text-slate-600 dark:text-slate-300">
+                      "{currentHindi}"
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Replay Audio Button */}
+              <div className="flex justify-center">
+                <button
+                  onClick={() => playEnglishAudio(currentEnglish)}
+                  className="px-6 py-3 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border-2 border-emerald-300 dark:border-emerald-700 rounded-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+                  title="Listen to this translation again"
+                >
+                  <RotateCcw className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <div className="text-left leading-tight">
+                    <span className={`text-sm font-black block ${t.fontFamily}`}>
+                      {t.replayAudio}
+                    </span>
+                    <span className="text-[10px] font-semibold block text-slate-500 dark:text-slate-400">
+                      {t.replayAudioHindi} • {t.replayAudioEnglish}
+                    </span>
+                  </div>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="text-slate-400 dark:text-slate-500 flex flex-col items-center text-center transition-colors">
-              <Volume2 className="w-24 h-24 mb-6 opacity-40 text-slate-400 dark:text-slate-500" />
-              <p className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-200 mb-2 ${t.fontFamily}`}>
+              <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center mb-6">
+                <Volume2 className="w-12 h-12 text-slate-400 dark:text-slate-500" />
+              </div>
+              <p className={`text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-200 mb-1 ${t.fontFamily}`}>
                 {t.waitingTeacher}
               </p>
-              <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-sm sm:text-base text-slate-400 dark:text-slate-500 font-semibold">
                 {t.waitingTeacherHindi} • {t.waitingTeacherEnglish}
               </p>
             </div>
