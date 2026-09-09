@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: lingoflip-server
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x # Or whatever Node version you prefer
+      - key: GEMINI_API_KEY
+        sync: false # You will set this manually in the Render dashboard
