@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { Users, Mic, Square, Hand, AlertCircle, PhoneOff, ArrowLeft } from 'lucide-react';
+import { Users, Mic, Square, Hand, AlertCircle, PhoneOff, ArrowLeft, Languages } from 'lucide-react';
+import { AdultTeacherIcon, ChildStudentIcon } from './icons/RoleIcons';
 import { processAudioPipeline } from '../services/ai4bharat';
 import ThemeToggle from './ThemeToggle';
 
@@ -20,6 +21,14 @@ function TeacherDashboard() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [doubts, setDoubts] = useState([]);
+  const [teacherLang, setTeacherLang] = useState('hi'); // 'hi' or 'en'
+
+  const teacherLangRef = useRef(teacherLang);
+  const isRecordingRef = useRef(false);
+
+  useEffect(() => {
+    teacherLangRef.current = teacherLang;
+  }, [teacherLang]);
 
   useEffect(() => {
     socket.on('student-joined', (student) => {
@@ -42,8 +51,17 @@ function TeacherDashboard() {
     };
   }, []);
 
+  const switchLanguage = (newLang) => {
+    if (newLang === teacherLang) return;
+    setTeacherLang(newLang);
+    teacherLangRef.current = newLang;
+    if (roomCode) {
+      socket.emit('update-room-language', { roomCode, language: newLang });
+    }
+  };
+
   const createRoom = () => {
-    socket.emit('create-room', { teacherName: 'Teacher', language: 'hi' }, (res) => {
+    socket.emit('create-room', { teacherName: 'Teacher', language: teacherLang }, (res) => {
       if (res.success) {
         setRoomCode(res.roomCode);
       }
@@ -56,6 +74,7 @@ function TeacherDashboard() {
     );
     if (!confirmEnd) return;
 
+    isRecordingRef.current = false;
     if (isRecording) {
       setIsRecording(false);
     }
@@ -74,25 +93,26 @@ function TeacherDashboard() {
   const toggleRecording = () => {
     if (!isRecording) {
       setIsRecording(true);
-      // In a real implementation, we would use MediaRecorder here
-      // to capture audio chunks and send them to the AI4Bharat STT API.
-      // For boilerplate, we'll simulate a transcript being sent.
+      isRecordingRef.current = true;
       simulateTranscription();
     } else {
       setIsRecording(false);
+      isRecordingRef.current = false;
     }
   };
 
   const simulateTranscription = () => {
-    // Simulated transcript payload
     setTimeout(() => {
-      if (!isRecording) return;
-      const text = "नमस्ते, आज हम विज्ञान के बारे में सीखेंगे। (Hello, today we will learn about science.)";
+      if (!isRecordingRef.current) return;
+      const currentLang = teacherLangRef.current;
+      const text = currentLang === 'en'
+        ? "Hello students, today we will learn about science and nature."
+        : "नमस्ते बच्चों, आज हम विज्ञान और प्रकृति के बारे में सीखेंगे।";
       setTranscript(text);
       socket.emit('send-transcript', {
         roomCode,
         text,
-        originalLang: 'hi'
+        originalLang: currentLang
       });
       simulateTranscription();
     }, 5000);
@@ -107,11 +127,45 @@ function TeacherDashboard() {
         </div>
 
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 text-center border border-transparent dark:border-slate-800 transition-colors">
-          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
-            <Users className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors shadow-sm">
+            <AdultTeacherIcon className="w-16 h-16 text-emerald-600 dark:text-emerald-400" />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Teacher Mode</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 transition-colors">Start a new class lobby and share the code with your students.</p>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 transition-colors">Start a new class lobby and share the code with your students.</p>
+          
+          {/* Pre-lobby Speaking Language Selection */}
+          <div className="mb-6 text-left">
+            <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 text-center">
+              Choose Speaking Language
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setTeacherLang('hi')}
+                className={`py-2 px-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  teacherLang === 'hi'
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🇮🇳</span>
+                <span>हिन्दी (Hindi)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTeacherLang('en')}
+                className={`py-2 px-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  teacherLang === 'en'
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🌐</span>
+                <span>English</span>
+              </button>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-3">
             <button 
               onClick={createRoom}
@@ -139,11 +193,53 @@ function TeacherDashboard() {
         {/* Header */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm dark:shadow-slate-950/50 flex items-center justify-between border-2 border-emerald-100 dark:border-slate-800 flex-wrap gap-4 transition-colors">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Live Class</h1>
-            <p className="text-slate-500 dark:text-slate-400 transition-colors">Speaking in Hindi</p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Live Class</h1>
+              <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Active Room
+              </span>
+            </div>
+
+            {/* In-lobby Speaking Language Switcher */}
+            <div className="mt-3 flex items-center gap-2.5 flex-wrap">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <Languages className="w-3.5 h-3.5" />
+                <span>Speaking In:</span>
+              </span>
+              
+              <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => switchLanguage('hi')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    teacherLang === 'hi'
+                      ? 'bg-emerald-500 text-white shadow-md'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Switch speaking language to Hindi"
+                >
+                  <span>🇮🇳</span>
+                  <span>हिन्दी (Hindi)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchLanguage('en')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    teacherLang === 'en'
+                      ? 'bg-emerald-500 text-white shadow-md'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Switch speaking language to English"
+                >
+                  <span>🌐</span>
+                  <span>English</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="text-center">
               <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Room Code</p>
               <div className="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-widest bg-emerald-50 dark:bg-slate-800 border border-transparent dark:border-slate-700 px-4 py-2 rounded-xl transition-colors">
@@ -180,12 +276,21 @@ function TeacherDashboard() {
             {isRecording ? 'Transmitting Live...' : 'Tap to Speak'}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-center max-w-md transition-colors">
-            {isRecording ? 'Your voice is being translated and sent to students in real-time.' : 'When you speak, students will hear the translation in their mother tongue.'}
+            {isRecording 
+              ? `Your voice (${teacherLang === 'en' ? 'English' : 'Hindi'}) is being translated and sent to students in real-time.` 
+              : `When you speak in ${teacherLang === 'en' ? 'English' : 'Hindi'}, students will receive translations in their tribal mother tongue.`}
           </p>
 
           {transcript && (
             <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800/80 border border-transparent dark:border-slate-700 rounded-xl w-full max-w-2xl text-center transition-colors">
-              <p className="text-sm text-slate-400 dark:text-slate-400 font-semibold mb-1">Latest Transcript (Hindi)</p>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <span className="text-sm text-slate-400 dark:text-slate-400 font-semibold">
+                  Latest Transcript
+                </span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                  {teacherLang === 'en' ? 'English' : 'हिन्दी (Hindi)'}
+                </span>
+              </div>
               <p className="text-lg text-slate-700 dark:text-slate-100">{transcript}</p>
             </div>
           )}
@@ -250,7 +355,12 @@ function TeacherDashboard() {
                 const lang = LANG_MAP[s.motherTongue] || { name: s.motherTongue, native: s.motherTongue, hindi: s.motherTongue, font: '' };
                 return (
                   <div key={s.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 border border-transparent dark:border-slate-700/60 p-3 rounded-xl transition-colors">
-                    <span className="font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center shrink-0">
+                        <ChildStudentIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />
+                      </div>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
+                    </div>
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border dark:border-slate-800 px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1.5">
                       <span className={`${lang.font} text-emerald-600 dark:text-emerald-400 font-bold`}>{lang.native}</span>
                       <span className="text-[10px] text-slate-400 dark:text-slate-500">({lang.hindi})</span>

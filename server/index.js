@@ -67,8 +67,23 @@ io.on('connection', (socket) => {
     if (callback) {
       callback({ 
         success: true, 
-        roomDetails: { teacherName: room.teacherName, students: room.students } 
+        roomDetails: { 
+          teacherName: room.teacherName, 
+          students: room.students,
+          language: room.language || 'hi'
+        } 
       });
+    }
+  });
+
+  // Handle teacher changing the speaking language (Hindi / English)
+  socket.on('update-room-language', ({ roomCode, language }) => {
+    if (!rooms.has(roomCode)) return;
+    const room = rooms.get(roomCode);
+    if (room.teacherId === socket.id) {
+      room.language = language;
+      console.log(`[Room] ${roomCode} language updated to ${language}`);
+      socket.to(roomCode).emit('room-language-updated', { language });
     }
   });
 
