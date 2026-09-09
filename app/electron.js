@@ -1,5 +1,9 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, session } = require('electron');
 const path = require('path');
+
+// Ensure audio & speech playback is never blocked without user gesture
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.commandLine.appendSwitch('enable-speech-dispatcher');
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -26,6 +30,14 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Explicitly allow microphone / media permissions
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    callback(true);
+  });
+  session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+    return true;
+  });
+
   createWindow();
 
   app.on('activate', () => {

@@ -1,9 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { Users, Mic, Square, Hand, AlertCircle, PhoneOff, ArrowLeft, Languages } from 'lucide-react';
-import { AdultTeacherIcon, ChildStudentIcon } from './icons/RoleIcons';
-import { processAudioPipeline } from '../services/ai4bharat';
+import { 
+  Users, 
+  Mic, 
+  Square, 
+  Hand, 
+  AlertCircle, 
+  PhoneOff, 
+  ArrowLeft, 
+  Send, 
+  Sparkles, 
+  Volume2, 
+  Zap, 
+  CheckCircle2,
+  Radio,
+  Loader2,
+  AlertTriangle,
+  Key,
+  X,
+  ExternalLink,
+  ShieldCheck
+} from 'lucide-react';
+import { translateHindiToEnglish } from '../services/translator';
+import { startRecording, stopRecording } from '../services/audioRecorder';
 import ThemeToggle from './ThemeToggle';
 
 const socket = io('http://localhost:3001');
@@ -14,12 +34,19 @@ const LANG_MAP = {
   mun: { name: 'Mundari', native: 'मुण्डारी', hindi: 'मुण्डारी', font: 'font-devanagari' }
 };
 
+const QUICK_PHRASES = [
+  { hi: 'नमस्ते बच्चों!', en: 'Hello children!' },
+  { hi: 'किताबें खोलें।', en: 'Open your books.' },
+  { hi: 'आज हम विज्ञान पढ़ेंगे।', en: 'Today we will study science.' },
+  { hi: 'क्या सबको समझ आया?', en: 'Did everyone understand?' },
+  { hi: 'अपना हाथ उठाएं।', en: 'Raise your hand.' },
+  { hi: 'शांत रहें और ध्यान से सुनें।', en: 'Please remain quiet and listen carefully.' }
+];
+
 function TeacherDashboard() {
   const navigate = useNavigate();
   const [roomCode, setRoomCode] = useState(null);
   const [students, setStudents] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const [doubts, setDoubts] = useState([]);
   const [teacherLang, setTeacherLang] = useState('hi'); // 'hi' or 'en'
 
@@ -30,33 +57,125 @@ function TeacherDashboard() {
     teacherLangRef.current = teacherLang;
   }, [teacherLang]);
 
+  // Voice recording & transcription states
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+
+  // Transmission results
+  const [hindiTranscript, setHindiTranscript] = useState('');
+  const [englishTranslation, setEnglishTranslation] = useState('');
+  const [latency, setLatency] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [customText, setCustomText] = useState('');
+
+  // Gemini API Key Management
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [keyPreview, setKeyPreview] = useState('');
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [isSavingKey, setIsSavingKey] = useState(false);
+  const [keySaveSuccess, setKeySaveSuccess] = useState('');
+
+  // Timer & click locks
+  const timerRef = useRef(null);
+  const startTimeRef = useRef(0);
+  const isActionInProgressRef = useRef(false);
+
+  // Fetch initial API key status and sync with localStorage
+  const checkApiKeyStatus = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/key-status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.hasKey) {
+          setHasApiKey(true);
+          setKeyPreview(data.preview || '');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not check server API key status:', e);
+    }
+
+    // Check local storage fallback
+    const savedLocalKey = localStorage.getItem('palash_gemini_key');
+    if (savedLocalKey && savedLocalKey.length > 8) {
+      try {
+        const syncRes = await fetch('http://localhost:3001/api/set-api-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: savedLocalKey })
+        });
+        if (syncRes.ok) {
+          setHasApiKey(true);
+          setKeyPreview(`${savedLocalKey.substring(0, 4)}...${savedLocalKey.slice(-4)}`);
+        }
+      } catch (err) {}
+    }
+  };
+
   useEffect(() => {
+    checkApiKeyStatus();
+
     socket.on('student-joined', (student) => {
       setStudents((prev) => [...prev, student]);
     });
 
     socket.on('student-left', (student) => {
-      setStudents((prev) => prev.filter(s => s.id !== student.id));
+      setStudents((prev) => prev.filter((s) => s.id !== student.id));
     });
 
     socket.on('student-doubt', (data) => {
       setDoubts((prev) => [...prev, data]);
-      // Play a notification sound or flash screen here
     });
 
     return () => {
       socket.off('student-joined');
       socket.off('student-left');
       socket.off('student-doubt');
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, []);
 
-  const switchLanguage = (newLang) => {
-    if (newLang === teacherLang) return;
-    setTeacherLang(newLang);
-    teacherLangRef.current = newLang;
-    if (roomCode) {
-      socket.emit('update-room-language', { roomCode, language: newLang });
+  const handleSaveApiKey = async (e) => {
+    e?.preventDefault();
+    const key = apiKeyInput.trim();
+    if (!key) return;
+
+    setIsSavingKey(true);
+    setKeySaveSuccess('');
+
+    try {
+      const res = await fetch('http://localhost:3001/api/set-api-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: key })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('palash_gemini_key', key);
+        setHasApiKey(true);
+        setKeyPreview(`${key.substring(0, 4)}...${key.slice(-4)}`);
+        setKeySaveSuccess('Gemini API Key saved successfully! Speech recognition is ready.');
+        setTimeout(() => {
+          setShowKeyModal(false);
+          setKeySaveSuccess('');
+          setApiKeyInput('');
+        }, 1500);
+      } else {
+        alert(data.message || 'Failed to save key');
+      }
+    } catch (err) {
+      alert('Error saving API Key: ' + err.message);
+    } finally {
+      setIsSavingKey(false);
     }
   };
 
@@ -68,7 +187,7 @@ function TeacherDashboard() {
     });
   };
 
-  const endClass = () => {
+  const endClass = async () => {
     const confirmEnd = window.confirm(
       'Are you sure you want to end this live class? All connected students will be disconnected.'
     );
@@ -76,53 +195,220 @@ function TeacherDashboard() {
 
     isRecordingRef.current = false;
     if (isRecording) {
+      await stopRecording();
       setIsRecording(false);
+      setAudioLevel(0);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
 
     socket.emit('end-room', { roomCode }, (res) => {
       console.log('Class ended response:', res);
     });
 
-    // Reset local room state to bring teacher back to lobby
     setRoomCode(null);
     setStudents([]);
-    setTranscript('');
+    setHindiTranscript('');
+    setEnglishTranslation('');
+    setStatusMessage('');
+    setLatency(null);
     setDoubts([]);
   };
 
-  const toggleRecording = () => {
-    if (!isRecording) {
-      setIsRecording(true);
-      isRecordingRef.current = true;
-      simulateTranscription();
-    } else {
-      setIsRecording(false);
-      isRecordingRef.current = false;
+  /**
+   * Translates Hindi speech to English and broadcasts to classroom in real-time
+   */
+  const handleProcessHindiSpeech = async (hindiText, startTime = null) => {
+    const text = (hindiText || '').trim();
+    if (!text || !roomCode) return;
+
+    setIsTranslating(true);
+    setHindiTranscript(text);
+    setStatusMessage('');
+
+    const t0 = startTime || Date.now();
+    try {
+      const res = await translateHindiToEnglish(text);
+      const elapsed = Date.now() - t0;
+
+      setEnglishTranslation(res.translatedText);
+      setLatency(elapsed);
+      setIsTranslating(false);
+
+      // Emit to students with sub-second turnaround
+      socket.emit('send-transcript', {
+        roomCode,
+        hindiText: text,
+        englishText: res.translatedText,
+        text: text,
+        originalLang: 'hi',
+        targetLang: 'en',
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.error('Translation error:', err);
+      setIsTranslating(false);
     }
   };
 
-  const simulateTranscription = () => {
-    setTimeout(() => {
-      if (!isRecordingRef.current) return;
-      const currentLang = teacherLangRef.current;
-      const text = currentLang === 'en'
-        ? "Hello students, today we will learn about science and nature."
-        : "नमस्ते बच्चों, आज हम विज्ञान और प्रकृति के बारे में सीखेंगे।";
-      setTranscript(text);
-      socket.emit('send-transcript', {
-        roomCode,
-        text,
-        originalLang: currentLang
-      });
-      simulateTranscription();
-    }, 5000);
+  /**
+   * Starts or stops live microphone recording with precise wall-clock timer & Gemini STT
+   */
+  const toggleRecording = async () => {
+    if (isActionInProgressRef.current) return;
+    isActionInProgressRef.current = true;
+
+    if (!isRecording) {
+      // Check if API key is configured before starting
+      if (!hasApiKey) {
+        setShowKeyModal(true);
+        setStatusMessage('Google Gemini API Key आवश्यक है। कृपया अपनी Key दर्ज करें।');
+        isActionInProgressRef.current = false;
+        return;
+      }
+
+      try {
+        setStatusMessage('');
+        setRecordingSeconds(0);
+        startTimeRef.current = Date.now();
+
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+
+        // Start native MediaRecorder with volume meter
+        await startRecording({
+          onAudioLevel: (level) => {
+            setAudioLevel(level);
+          }
+        });
+
+        setIsRecording(true);
+
+        // Precise wall-clock elapsed timer
+        timerRef.current = setInterval(() => {
+          if (startTimeRef.current > 0) {
+            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            setRecordingSeconds(elapsed);
+          }
+        }, 150);
+      } catch (err) {
+        console.error('Failed to access microphone:', err);
+        setStatusMessage('माइक चालू नहीं हो सका। कृपया माइक्रोफ़ोन की अनुमति दें। (Could not access microphone.)');
+        setIsRecording(false);
+      } finally {
+        isActionInProgressRef.current = false;
+      }
+    } else {
+      // Teacher stopped speaking -> finalize recording
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setIsRecording(false);
+      setAudioLevel(0);
+      setIsTranscribing(true);
+
+      const captureStartTime = Date.now();
+
+      try {
+        const audioResult = await stopRecording();
+
+        if (!audioResult || !audioResult.base64) {
+          setIsTranscribing(false);
+          setStatusMessage('रिकॉर्डिंग बहुत छोटी थी। कृपया बटन दबाकर पूरा वाक्य बोलें। (Recording was too short.)');
+          setTimeout(() => setStatusMessage(''), 4000);
+          isActionInProgressRef.current = false;
+          return;
+        }
+
+        console.log(`[Audio Captured]: ${audioResult.durationSec}s, ${audioResult.mimeType}, base64 len: ${audioResult.base64.length}`);
+
+        // Send recorded audio to Gemini STT & Translation
+        socket.emit(
+          'transcribe-audio',
+          { audioBase64: audioResult.base64, mimeType: audioResult.mimeType },
+          async (sttRes) => {
+            setIsTranscribing(false);
+
+            if (sttRes?.needsApiKey) {
+              setHasApiKey(false);
+              setShowKeyModal(true);
+              setStatusMessage('Gemini API Key आवश्यक है। कृपया अपनी Key दर्ज करें।');
+              return;
+            }
+
+            if (sttRes && sttRes.success && sttRes.hindiText) {
+              const recognizedHindi = sttRes.hindiText.trim();
+              const englishTrans = (sttRes.englishText || '').trim();
+              const elapsedMs = sttRes.latencyMs || (Date.now() - captureStartTime);
+
+              console.log('[Gemini STT Output]:', { hindi: recognizedHindi, english: englishTrans });
+
+              setHindiTranscript(recognizedHindi);
+              setStatusMessage('');
+
+              if (englishTrans) {
+                // Direct joint transcription + translation from Gemini!
+                setEnglishTranslation(englishTrans);
+                setLatency(elapsedMs);
+
+                socket.emit('send-transcript', {
+                  roomCode,
+                  hindiText: recognizedHindi,
+                  englishText: englishTrans,
+                  text: recognizedHindi,
+                  originalLang: 'hi',
+                  targetLang: 'en',
+                  timestamp: Date.now()
+                });
+              } else {
+                // Fallback translation if needed
+                await handleProcessHindiSpeech(recognizedHindi, captureStartTime);
+              }
+            } else {
+              const detail = sttRes?.error ? ` (${sttRes.error})` : '';
+              setStatusMessage(`आवाज़ साफ़ नहीं पहचानी गई। कृपया माइक के पास दोबारा बोलें।${detail}`);
+              setTimeout(() => setStatusMessage(''), 5000);
+            }
+          }
+        );
+      } catch (err) {
+        console.error('Error stopping audio:', err);
+        setIsTranscribing(false);
+        setStatusMessage('ऑडियो प्रोसेस करने में समस्या आई। (Error processing audio.)');
+      } finally {
+        isActionInProgressRef.current = false;
+      }
+    }
+  };
+
+  const handleCustomSubmit = (e) => {
+    e.preventDefault();
+    if (!customText.trim()) return;
+    handleProcessHindiSpeech(customText.trim());
+    setCustomText('');
   };
 
   if (!roomCode) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 relative transition-colors duration-200">
-        {/* Theme Switcher top right */}
-        <div className="absolute top-6 right-6 z-10">
+        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+          {/* Gemini Key Config in Lobby */}
+          <button
+            onClick={() => setShowKeyModal(true)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              hasApiKey 
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                : 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 animate-pulse'
+            }`}
+          >
+            {hasApiKey ? <ShieldCheck className="w-4 h-4 text-emerald-500" /> : <Key className="w-4 h-4 text-amber-600" />}
+            <span>{hasApiKey ? `Gemini Active (${keyPreview})` : 'Set Gemini API Key'}</span>
+          </button>
           <ThemeToggle showLabel />
         </div>
 
@@ -182,6 +468,85 @@ function TeacherDashboard() {
             </button>
           </div>
         </div>
+
+        {/* Gemini API Key Modal */}
+        {showKeyModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 max-w-md w-full rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+              <button 
+                onClick={() => setShowKeyModal(false)}
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Google Gemini API Key</h3>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">Required for high-accuracy Hindi voice recognition</p>
+                </div>
+              </div>
+
+              {keySaveSuccess && (
+                <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+                  <span>{keySaveSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveApiKey} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    Gemini API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    placeholder={hasApiKey ? `Key configured (${keyPreview}) - Paste new key to update` : "Paste AIzaSy... here"}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    required
+                  />
+                </div>
+
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 space-y-1">
+                  <p className="font-semibold text-slate-700 dark:text-slate-300">Don't have a Gemini API key?</p>
+                  <p>Get a 100% free key with no credit card required:</p>
+                  <a 
+                    href="https://aistudio.google.com/app/apikey" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline mt-1"
+                  >
+                    <span>Get Free Key from Google AI Studio</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyModal(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingKey || !apiKeyInput.trim()}
+                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-emerald-200 dark:shadow-emerald-950/40 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSavingKey ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                    <span>Save Key</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -193,53 +558,30 @@ function TeacherDashboard() {
         {/* Header */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm dark:shadow-slate-950/50 flex items-center justify-between border-2 border-emerald-100 dark:border-slate-800 flex-wrap gap-4 transition-colors">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Live Class</h1>
-              <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Active Room
-              </span>
             </div>
-
-            {/* In-lobby Speaking Language Switcher */}
-            <div className="mt-3 flex items-center gap-2.5 flex-wrap">
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                <Languages className="w-3.5 h-3.5" />
-                <span>Speaking In:</span>
-              </span>
-              
-              <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors shadow-inner">
-                <button
-                  type="button"
-                  onClick={() => switchLanguage('hi')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    teacherLang === 'hi'
-                      ? 'bg-emerald-500 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                  title="Switch speaking language to Hindi"
-                >
-                  <span>🇮🇳</span>
-                  <span>हिन्दी (Hindi)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => switchLanguage('en')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    teacherLang === 'en'
-                      ? 'bg-emerald-500 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                  title="Switch speaking language to English"
-                >
-                  <span>🌐</span>
-                  <span>English</span>
-                </button>
-              </div>
-            </div>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 transition-colors">
+              Speaking in Hindi (hi-IN) • Real-time English translation via Gemini AI
+            </p>
           </div>
 
           <div className="flex items-center gap-4 flex-wrap">
+            {/* Gemini API Key Status Badge */}
+            <button
+              onClick={() => setShowKeyModal(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                hasApiKey 
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
+                  : 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 animate-pulse hover:bg-amber-100'
+              }`}
+              title="Configure Google Gemini API Key"
+            >
+              {hasApiKey ? <Sparkles className="w-3.5 h-3.5 text-emerald-500" /> : <Key className="w-3.5 h-3.5 text-amber-600" />}
+              <span>{hasApiKey ? 'Gemini AI Active' : 'Set Gemini Key'}</span>
+            </button>
+
             <div className="text-center">
               <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Room Code</p>
               <div className="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-widest bg-emerald-50 dark:bg-slate-800 border border-transparent dark:border-slate-700 px-4 py-2 rounded-xl transition-colors">
@@ -260,40 +602,171 @@ function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Microphone Control */}
-        <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm dark:shadow-slate-950/50 flex flex-col items-center justify-center border-2 border-slate-100 dark:border-slate-800 transition-colors">
+        {/* Microphone & Live Translation Control */}
+        <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm dark:shadow-slate-950/50 flex flex-col items-center border-2 border-slate-100 dark:border-slate-800 transition-colors">
+          
+          {/* Status Badge */}
+          <div className="mb-4">
+            {isRecording ? (
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider animate-pulse">
+                <Radio className="w-4 h-4" /> 🔴 Recording Voice ({recordingSeconds}s) • Tap to Finish
+              </span>
+            ) : isTranscribing ? (
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold text-xs uppercase tracking-wider animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin" /> Gemini Recognizing Hindi & Translating...
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                <Mic className="w-4 h-4" /> Ready • Tap to Speak in Hindi
+              </span>
+            )}
+          </div>
+
+          {/* Big Mic Button with Dynamic Scale and Ring */}
           <button 
             onClick={toggleRecording}
-            className={`w-48 h-48 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 cursor-pointer ${
+            disabled={isTranscribing}
+            className={`w-40 h-40 md:w-44 md:h-44 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 cursor-pointer select-none relative ${
               isRecording 
-                ? 'bg-red-500 hover:bg-red-600 animate-pulse ring-8 ring-red-200 dark:ring-red-950/60' 
-                : 'bg-emerald-500 hover:bg-emerald-600 ring-8 ring-emerald-50 dark:ring-emerald-950/50'
+                ? 'bg-red-500 hover:bg-red-600 ring-8 ring-red-300 dark:ring-red-950/70 scale-105' 
+                : isTranscribing
+                  ? 'bg-amber-500 opacity-80 cursor-wait'
+                  : 'bg-emerald-500 hover:bg-emerald-600 ring-8 ring-emerald-50 dark:ring-emerald-950/50 hover:scale-105 active:scale-95'
             }`}
+            title={isRecording ? 'Click to stop and translate your voice' : 'Click to start speaking in Hindi'}
           >
-            {isRecording ? <Square className="w-20 h-20 text-white fill-white" /> : <Mic className="w-20 h-20 text-white" />}
+            {isTranscribing ? (
+              <Loader2 className="w-16 h-16 text-white animate-spin" />
+            ) : isRecording ? (
+              <Square className="w-16 h-16 text-white fill-white" />
+            ) : (
+              <Mic className="w-16 h-16 text-white" />
+            )}
           </button>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-8 transition-colors">
-            {isRecording ? 'Transmitting Live...' : 'Tap to Speak'}
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 text-center max-w-md transition-colors">
-            {isRecording 
-              ? `Your voice (${teacherLang === 'en' ? 'English' : 'Hindi'}) is being translated and sent to students in real-time.` 
-              : `When you speak in ${teacherLang === 'en' ? 'English' : 'Hindi'}, students will receive translations in their tribal mother tongue.`}
-          </p>
 
-          {transcript && (
-            <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800/80 border border-transparent dark:border-slate-700 rounded-xl w-full max-w-2xl text-center transition-colors">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="text-sm text-slate-400 dark:text-slate-400 font-semibold">
-                  Latest Transcript
-                </span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                  {teacherLang === 'en' ? 'English' : 'हिन्दी (Hindi)'}
-                </span>
-              </div>
-              <p className="text-lg text-slate-700 dark:text-slate-100">{transcript}</p>
+          {/* Live Audio Visualizer Waveform during Recording */}
+          {isRecording && (
+            <div className="flex items-center justify-center gap-1.5 h-10 mt-5">
+              {[...Array(9)].map((_, i) => {
+                const waveFactor = Math.sin((i / 8) * Math.PI);
+                const height = Math.max(8, Math.min(38, Math.round((audioLevel * waveFactor * 0.7) + 8)));
+                return (
+                  <span
+                    key={i}
+                    className="w-1.5 bg-red-500 rounded-full transition-all duration-75"
+                    style={{ height: `${height}px` }}
+                  />
+                );
+              })}
             </div>
           )}
+
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-5 transition-colors">
+            {isRecording 
+              ? `बोल रहे हैं... (${recordingSeconds}s)` 
+              : isTranscribing 
+                ? 'Gemini आवाज़ पहचान रहा है...' 
+                : 'Tap to Speak in Hindi'}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-center max-w-md text-sm transition-colors">
+            {isRecording 
+              ? 'अपना वाक्य हिंदी में बोलें, फिर अनुवाद करने के लिए दोबारा बटन दबाएं।' 
+              : isTranscribing
+                ? 'कृपया प्रतीक्षा करें, Google Gemini द्वारा हिंदी भाषण को अंग्रेजी में बदला जा रहा है।'
+                : 'माइक बटन दबाएं और हिंदी में बोलें। छात्र इसे तुरंत अंग्रेजी में सुनेंगे।'}
+          </p>
+
+          {/* Error / Status Guidance Banner */}
+          {statusMessage && (
+            <div className="mt-4 px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl flex items-center gap-2 text-amber-800 dark:text-amber-200 text-sm font-medium">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {/* Live Translation Card (Latest Spoken & Translated) */}
+          {(hindiTranscript || isTranslating) && (
+            <div className="mt-6 p-5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl shadow-sm transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  Latest Voice Transmission (Gemini STT)
+                </span>
+                {latency !== null && (
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-emerald-500" />
+                    {latency}ms Latency
+                  </span>
+                )}
+              </div>
+
+              {/* Hindi Original */}
+              <div className="mb-3">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase">Hindi (Voice Recognized)</span>
+                <p className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                  "{hindiTranscript}"
+                </p>
+              </div>
+
+              {/* English Translation */}
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase flex items-center gap-1">
+                  <Volume2 className="w-3.5 h-3.5" /> English (Spoken to Students)
+                </span>
+                <p className="text-xl font-black text-sky-700 dark:text-sky-300 mt-0.5">
+                  {isTranslating ? 'Translating to English...' : `"${englishTranslation}"`}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Classroom Test Chips */}
+          <div className="w-full max-w-2xl mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Quick Classroom Phrases (1-Click Test)</span>
+              </div>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Instant speech pipeline</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {QUICK_PHRASES.map((phrase, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleProcessHindiSpeech(phrase.hi)}
+                  className="p-3 bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 rounded-xl text-left transition-all active:scale-[0.98] cursor-pointer shadow-sm group"
+                >
+                  <span className="block font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                    {phrase.hi}
+                  </span>
+                  <span className="block text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                    → {phrase.en}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Hindi Text Input Box */}
+          <form onSubmit={handleCustomSubmit} className="w-full max-w-2xl mt-4 flex gap-2">
+            <input
+              type="text"
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              placeholder="या यहाँ कोई भी हिंदी वाक्य टाइप करें (उदा: ध्यान से सुनें)..."
+              className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm font-medium transition-all"
+            />
+            <button
+              type="submit"
+              disabled={!customText.trim()}
+              className="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold rounded-2xl transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed text-sm shadow-md shadow-emerald-200 dark:shadow-emerald-950/40"
+            >
+              <Send className="w-4 h-4" />
+              <span>Send</span>
+            </button>
+          </form>
         </div>
       </div>
 
@@ -327,7 +800,11 @@ function TeacherDashboard() {
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">They had a doubt when you said:</p>
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm text-sm text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-800">
-                    {doubt.context.map((c, i) => <p key={i}>"{c.text}"</p>)}
+                    {doubt.context && doubt.context.length > 0 ? (
+                      doubt.context.map((c, i) => <p key={i}>"{c.text}"</p>)
+                    ) : (
+                      <p>"{doubt.student.name} asked for clarification"</p>
+                    )}
                   </div>
                   <button 
                     onClick={() => setDoubts(doubts.filter((_, i) => i !== idx))}
@@ -372,6 +849,85 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Gemini API Key Modal */}
+      {showKeyModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 max-w-md w-full rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+            <button 
+              onClick={() => setShowKeyModal(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <Key className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Google Gemini API Key</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Fast, spot-on Hindi speech recognition & translation</p>
+              </div>
+            </div>
+
+            {keySaveSuccess && (
+              <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+                <span>{keySaveSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveApiKey} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder={hasApiKey ? `Key configured (${keyPreview}) - Paste new key to update` : "Paste AIzaSy... here"}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                  required
+                />
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 space-y-1">
+                <p className="font-semibold text-slate-700 dark:text-slate-300">Don't have a Gemini API key?</p>
+                <p>Get a 100% free key with no credit card required:</p>
+                <a 
+                  href="https://aistudio.google.com/app/apikey" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline mt-1"
+                >
+                  <span>Get Free Key from Google AI Studio</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowKeyModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingKey || !apiKeyInput.trim()}
+                  className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-emerald-200 dark:shadow-emerald-950/40 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSavingKey ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                  <span>Save Key</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
