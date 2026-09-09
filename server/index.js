@@ -25,29 +25,126 @@ let activeGeminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KE
 if (activeGeminiApiKey) {
   console.log('[Gemini Engine] Loaded Gemini API Key from environment/env.');
 } else {
-  console.log('[Gemini Engine] No Gemini API Key found. You can set it in server/.env or via the Teacher Dashboard.');
+  console.log('[Gemini Engine] No Gemini API Key found. Set it in server/.env or via the Teacher Dashboard.');
 }
 
 /**
- * Transcribes Hindi audio and translates to English in a single turn using Google Gemini
+ * High-accuracy offline translations for standard classroom phrases
+ */
+const OFFLINE_TRANSLATIONS = {
+  'नमस्ते बच्चों!': {
+    santhali: { text: 'ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ!', phonetic: 'सागुन जोहार गिद्रा को!' },
+    ho: { text: '𑢹𑣉𑣉 ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹᱠᱳ!', phonetic: 'जोहार गिदराको!' },
+    mundari: { text: 'जोहार होनको!', phonetic: 'जोहार होनको!' },
+    english: 'Hello children!'
+  },
+  'नमस्ते बच्चों': {
+    santhali: { text: 'ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ', phonetic: 'सागुन जोहार गिद्रा को' },
+    ho: { text: '𑢹𑣉𑣉 ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹᱠᱳ', phonetic: 'जोहार गिदराको' },
+    mundari: { text: 'जोहार होनको', phonetic: 'जोहार होनको' },
+    english: 'Hello children'
+  },
+  'किताबें खोलें।': {
+    santhali: { text: 'ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱯᱮ᱾', phonetic: 'पुथी झिज पे।' },
+    ho: { text: 'ᱯᱩᱛᱷᱤ ᱚᱞᱳᱯᱮ᱾', phonetic: 'पुथी ओलोपे।' },
+    mundari: { text: 'पुथी उगुइपे।', phonetic: 'पुथी उगुइपे।' },
+    english: 'Open your books.'
+  },
+  'किताबें खोलें': {
+    santhali: { text: 'ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱯᱮ', phonetic: 'पुथी झिज पे' },
+    ho: { text: 'ᱯᱩᱛᱷᱤ ᱚᱞᱳᱯᱮ', phonetic: 'पुथी ओलोपे' },
+    mundari: { text: 'पुथी उगुइपे', phonetic: 'पुथी उगुइपे' },
+    english: 'Open your books'
+  },
+  'आज हम विज्ञान पढ़ेंगे।': {
+    santhali: { text: 'ᱛᱮᱦᱮᱧ ᱵᱤᱜᱽᱭᱟᱱ ᱵᱚᱱ ᱯᱟᱲᱦᱟᱣᱟ᱾', phonetic: 'तेहेंगे बिग्यान बोन पाढ़ावा।' },
+    ho: { text: 'ᱛᱤᱥᱤᱝ ᱵᱤᱜᱽᱭᱟᱱ ᱯᱟᱲᱦᱟᱣ ᱚᱣᱟ᱾', phonetic: 'तिसिंग बिग्यान पाढ़ाव ओवा।' },
+    mundari: { text: 'तिसिंग आबु बिग्यान पाढ़ावइया।', phonetic: 'तिसिंग आबु बिग्यान पाढ़ावइया।' },
+    english: 'Today we will study science.'
+  },
+  'क्या सबको समझ आया?': {
+    santhali: { text: 'ᱡᱚᱛᱚ ᱦᱚᱲ ᱵᱩᱡᱷᱟᱹᱣ ᱮᱱᱟ?', phonetic: 'जोतो होड़ बुझाव एना?' },
+    ho: { text: 'ᱥᱟᱵᱩᱭ ᱠᱳ ᱥᱟᱢᱡᱷᱟᱣ ᱮᱱᱟ?', phonetic: 'सबुइको समझायोवा?' },
+    mundari: { text: 'सबेनको समझायना?', phonetic: 'सबेनको समझायना?' },
+    english: 'Did everyone understand?'
+  },
+  'अपना हाथ उठाएं।': {
+    santhali: { text: 'ᱟᱯᱱᱟᱨ ᱛᱤ ᱛᱩᱞ ᱯᱮ᱾', phonetic: 'आपणार ती तुल पे।' },
+    ho: { text: 'ᱛᱤ ᱛᱩᱞ ᱯᱮ᱾', phonetic: 'ती तुलपे।' },
+    mundari: { text: 'ती तुलपे।', phonetic: 'ती तुलपे।' },
+    english: 'Raise your hand.'
+  },
+  'शांत रहें और ध्यान से सुनें।': {
+    santhali: { text: 'ᱛᱷᱤᱨ ᱛᱟᱦᱮᱸᱱ ᱯᱮ ᱟᱨ ᱟᱸᱡᱚᱢ ᱯᱮ᱾', phonetic: 'थीर ताहेन पे आर आंजोम पे।' },
+    ho: { text: 'ᱛᱷᱤᱨ ᱠᱳ ᱛᱟᱠᱮᱱ ᱟᱸᱡᱳᱢ ᱯᱮ᱾', phonetic: 'थिरको ताकेन आंजोमपे।' },
+    mundari: { text: 'थिर ताकेन आंजोमपे।', phonetic: 'थिर ताकेन आंजोमपे।' },
+    english: 'Please remain quiet and listen carefully.'
+  }
+};
+
+/**
+ * Normalizes multi-lingual translation object
+ */
+function normalizeTranslationPayload(raw, hindiText) {
+  const normLang = (val, fallback = '') => {
+    if (!val) return { text: fallback, phonetic: fallback };
+    if (typeof val === 'string') return { text: val.trim(), phonetic: val.trim() };
+    const txt = val.text || val.olChiki || val.native || fallback;
+    const pho = val.phonetic || val.devanagari || val.hindi || txt;
+    return { text: String(txt).trim(), phonetic: String(pho).trim() };
+  };
+
+  return {
+    hindi: (raw.hindi || hindiText || '').trim(),
+    english: (raw.english || '').trim(),
+    santhali: normLang(raw.santhali, raw.hindi || hindiText),
+    ho: normLang(raw.ho, raw.hindi || hindiText),
+    mundari: normLang(raw.mundari, raw.hindi || hindiText)
+  };
+}
+
+/**
+ * Transcribes Hindi audio and simultaneously translates to Santhali, Ho, Mundari & English
  * @param {string} audioBase64 - Base64 encoded audio bytes
  * @param {string} mimeType - e.g. 'audio/webm' or 'audio/wav'
- * @returns {Promise<{ hindi: string, english: string, modelUsed: string }>}
  */
 async function transcribeAndTranslateWithGemini(audioBase64, mimeType = 'audio/webm') {
   if (!activeGeminiApiKey) {
     throw new Error('GEMINI_API_KEY is not configured. Please enter your Gemini API key in the Teacher dashboard or server/.env.');
   }
 
-  const prompt = `You are an expert speech-to-text transcriber for Indian school classrooms.
+  const prompt = `You are an expert multilingual AI translator and speech transcriber for tribal primary education in Jharkhand under the PALASH program.
 Listen carefully to the audio of a teacher speaking in Hindi.
-1. Transcribe the Hindi speech accurately in Devanagari script (e.g., "नमस्ते बच्चों कैसे हो", "किताबें खोलो", "क्या सबको समझ आया").
-2. Translate what the teacher said into natural, clear English.
+1. Transcribe what was spoken into accurate Hindi in Devanagari script.
+2. Translate into Santhali:
+   - "text": Santhali in Ol Chiki script (e.g. ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ, ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱯᱮ)
+   - "phonetic": Santhali in Devanagari script so text-to-speech can speak authentic Santhali words (e.g. सागुन जोहार, पुथी झिज पे)
+3. Translate into Ho:
+   - "text": Ho in Warang Chiti or Devanagari (e.g. 𑢹𑣉𑣉 ᱡᱚᱦᱟᱨ or जोहार गिदराको)
+   - "phonetic": Ho in Devanagari phonetic script so text-to-speech can speak authentic Ho words (e.g. जोहार गिदराको, पुथी ओलोपे)
+4. Translate into Mundari:
+   - "text": Mundari in Devanagari script (e.g. जोहार होनको, पुथी उगुइपे)
+   - "phonetic": Mundari in Devanagari script so text-to-speech can speak authentic Mundari words (e.g. जोहार होनको, पुथी उगुइपे)
+5. Translate into English for classroom subtitles.
 
-Respond ONLY with valid JSON in this exact structure with no markdown backticks or commentary:
-{"hindi": "exact Devanagari transcription", "english": "accurate English translation"}`;
+Respond ONLY with valid JSON in this exact structure with no markdown backticks or extra commentary:
+{
+  "hindi": "exact Hindi transcription in Devanagari",
+  "santhali": {
+    "text": "Santhali in Ol Chiki",
+    "phonetic": "Santhali in Devanagari phonetics"
+  },
+  "ho": {
+    "text": "Ho in Warang Chiti or Devanagari",
+    "phonetic": "Ho in Devanagari phonetics"
+  },
+  "mundari": {
+    "text": "Mundari in Devanagari",
+    "phonetic": "Mundari in Devanagari phonetics"
+  },
+  "english": "English translation"
+}`;
 
-  // Clean mimeType (remove codecs=opus suffix if present)
   const cleanMime = mimeType.split(';')[0].trim() || 'audio/webm';
 
   const requestBody = {
@@ -72,7 +169,6 @@ Respond ONLY with valid JSON in this exact structure with no markdown backticks 
     }
   };
 
-  // Priority models: fast 2.5 Flash, 3.5 Flash Lite, 1.5 Flash
   const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash', 'gemini-2.0-flash'];
   let lastError = null;
 
@@ -98,13 +194,12 @@ Respond ONLY with valid JSON in this exact structure with no markdown backticks 
         throw new Error('Gemini returned an empty candidate part');
       }
 
-      // Clean up markdown formatting if returned
       const cleaned = candidate.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
       const parsed = JSON.parse(cleaned);
+      const normalized = normalizeTranslationPayload(parsed, '');
 
       return {
-        hindi: (parsed.hindi || '').trim(),
-        english: (parsed.english || '').trim(),
+        ...normalized,
         modelUsed: model
       };
     } catch (err) {
@@ -114,6 +209,92 @@ Respond ONLY with valid JSON in this exact structure with no markdown backticks 
   }
 
   throw lastError || new Error('Failed to transcribe audio with Gemini');
+}
+
+/**
+ * Translates arbitrary Hindi text into Santhali, Ho, Mundari, and English using Gemini or offline cache
+ */
+async function translateTextWithGemini(hindiText) {
+  const trimmed = (hindiText || '').trim();
+  if (!trimmed) return null;
+
+  // 1. Direct match in offline classroom phrase dictionary
+  if (OFFLINE_TRANSLATIONS[trimmed]) {
+    const offline = OFFLINE_TRANSLATIONS[trimmed];
+    return {
+      hindi: trimmed,
+      santhali: offline.santhali,
+      ho: offline.ho,
+      mundari: offline.mundari,
+      english: offline.english,
+      source: 'offline-cache'
+    };
+  }
+
+  // 2. Query Gemini if API key is active
+  if (activeGeminiApiKey) {
+    const prompt = `Translate this teacher's classroom Hindi sentence into tribal languages of Jharkhand:
+Hindi: "${trimmed}"
+
+1. Santhali:
+   - "text": Ol Chiki script
+   - "phonetic": Devanagari script for speech pronunciation
+2. Ho:
+   - "text": Warang Chiti or Devanagari
+   - "phonetic": Devanagari script for speech pronunciation
+3. Mundari:
+   - "text": Devanagari script
+   - "phonetic": Devanagari script for speech pronunciation
+4. English: English translation
+
+Respond in strict JSON:
+{
+  "hindi": "${trimmed}",
+  "santhali": { "text": "...", "phonetic": "..." },
+  "ho": { "text": "...", "phonetic": "..." },
+  "mundari": { "text": "...", "phonetic": "..." },
+  "english": "..."
+}`;
+
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash'];
+    for (const model of modelsToTry) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(activeGeminiApiKey)}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.1 }
+          })
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          const candidate = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (candidate) {
+            const parsed = JSON.parse(candidate.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim());
+            return {
+              ...normalizeTranslationPayload(parsed, trimmed),
+              source: `gemini-${model}`
+            };
+          }
+        }
+      } catch (e) {
+        console.warn(`[Text Translation] Error with ${model}:`, e.message);
+      }
+    }
+  }
+
+  // 3. Fallback: return reasonable phonetics based on input
+  return {
+    hindi: trimmed,
+    santhali: { text: trimmed, phonetic: trimmed },
+    ho: { text: trimmed, phonetic: trimmed },
+    mundari: { text: trimmed, phonetic: trimmed },
+    english: trimmed,
+    source: 'fallback'
+  };
 }
 
 // ------------------- REST API Endpoints -------------------
@@ -138,7 +319,6 @@ app.post('/api/set-api-key', (req, res) => {
     activeGeminiApiKey = apiKey.trim();
     process.env.GEMINI_API_KEY = activeGeminiApiKey;
 
-    // Write to server/.env
     const envPath = path.join(__dirname, '.env');
     let envContent = '';
     if (fs.existsSync(envPath)) {
@@ -161,6 +341,21 @@ app.post('/api/set-api-key', (req, res) => {
   }
 });
 
+// HTTP endpoint for translating text to all mother tongues
+app.post('/api/translate-text', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ success: false, error: 'No text provided' });
+    }
+    const result = await translateTextWithGemini(text);
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('[Translate Text Error]', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // HTTP endpoint for audio transcription & translation
 app.post('/api/transcribe-audio', async (req, res) => {
   try {
@@ -179,10 +374,7 @@ app.post('/api/transcribe-audio', async (req, res) => {
     const result = await transcribeAndTranslateWithGemini(audioBase64, mimeType);
     return res.json({
       success: true,
-      text: result.hindi,
-      hindiText: result.hindi,
-      englishText: result.english,
-      model: result.modelUsed
+      data: result
     });
   } catch (err) {
     console.error('[STT HTTP Error]', err);
@@ -289,7 +481,7 @@ io.on('connection', (socket) => {
     room.students.push(newStudent);
     socket.join(roomCode);
     
-    console.log(`[Room] Student ${studentName} joined ${roomCode}`);
+    console.log(`[Room] Student ${studentName} (${motherTongue}) joined ${roomCode}`);
 
     // Notify teacher
     io.to(room.teacherId).emit('student-joined', newStudent);
@@ -302,7 +494,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // 3. Gemini High-Accuracy Multimodal Speech-to-Text & Translation
+  // 3. Multilingual Speech-to-Text & Translation (Santhali, Ho, Mundari, English)
   socket.on('transcribe-audio', async ({ audioBase64, mimeType = 'audio/webm' }, callback) => {
     try {
       if (!audioBase64) {
@@ -324,13 +516,16 @@ io.on('connection', (socket) => {
       const t0 = Date.now();
       const result = await transcribeAndTranslateWithGemini(audioBase64, mimeType);
       const latencyMs = Date.now() - t0;
-      console.log(`[Gemini STT Transcribed in ${latencyMs}ms (${result.modelUsed})]:`, result);
+      console.log(`[Gemini Multilingual STT in ${latencyMs}ms (${result.modelUsed})]:`, result);
 
       if (callback) {
         callback({
           success: true,
-          text: result.hindi,
           hindiText: result.hindi,
+          text: result.hindi,
+          santhali: result.santhali,
+          ho: result.ho,
+          mundari: result.mundari,
           englishText: result.english,
           model: result.modelUsed,
           latencyMs
@@ -347,8 +542,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  // 4. Handle live transcript broadcast (STT output from teacher)
-  socket.on('send-transcript', ({ roomCode, text, hindiText, englishText, originalLang = 'hi', targetLang = 'en', timestamp }) => {
+  // 4. Handle live transcript broadcast (Broadcasts all tribal translations to students)
+  socket.on('send-transcript', ({ roomCode, text, hindiText, santhali, ho, mundari, englishText, timestamp }) => {
     if (!rooms.has(roomCode)) return;
     
     const room = rooms.get(roomCode);
@@ -360,15 +555,15 @@ io.on('connection', (socket) => {
       id: `${sentTime}-${socket.id}`,
       text: hText,
       hindiText: hText,
+      santhali: santhali || { text: hText, phonetic: hText },
+      ho: ho || { text: hText, phonetic: hText },
+      mundari: mundari || { text: hText, phonetic: hText },
       englishText: eText,
-      originalLang,
-      targetLang,
       timestamp: sentTime
     };
     
     room.transcriptHistory.push(transcriptEntry);
 
-    // Keep history reasonably sized
     if (room.transcriptHistory.length > 50) {
       room.transcriptHistory.shift();
     }
@@ -438,5 +633,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`[Server] PalashSetu Server listening on port ${PORT}`);
-  console.log(`[Server] Gemini Speech-to-Text & Translation Engine Ready.`);
+  console.log(`[Server] Multilingual Speech & Mother Tongue Engine Ready (Santhali, Ho, Mundari).`);
 });

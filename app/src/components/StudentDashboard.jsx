@@ -75,21 +75,22 @@ const STUDENT_I18N = {
     doubtWaitEnglish: 'Please wait',
     teacherEndedAlert: 'ᱜᱩᱨᱩ ᱜᱚᱢᱠᱮ ᱠᱞᱟᱥ ᱮ ᱢᱩᱪᱟᱹᱫ ᱠᱮᱫ-ᱟ᱾\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
     // Audio Pipeline Vernacular Labels
-    englishAudioTitle: 'ᱤᱝᱨᱟᱹᱡᱤ ᱨᱟᱹᱲ',
-    englishAudioTitleHindi: 'अंग्रेजी ऑडियो',
-    englishAudioTitleEnglish: 'English Audio',
+    vernacularAudioTitle: 'ᱥᱟᱱᱛᱟᱲᱤ ᱨᱟᱹᱲ',
+    vernacularAudioTitleHindi: 'संथाली ऑडियो',
+    vernacularAudioTitleEnglish: 'Santhali Audio',
     replayAudio: 'ᱨᱟᱹᱲ ᱟᱸᱡᱚᱢ ᱨᱩᱣᱟᱹᱲ',
     replayAudioHindi: 'ऑडियो फिर से सुनें',
     replayAudioEnglish: 'Replay Audio',
-    speakingNow: 'ᱨᱟᱹᱲ ᱟᱸᱡᱚᱢᱚᱜ ᱠᱟᱱᱟ...',
-    speakingNowHindi: 'ऑडियो बज रहा है...',
-    speakingNowEnglish: 'Playing audio...',
+    speakingNow: 'ᱥᱟᱱᱛᱟᱲᱤ ᱨᱟᱹᱲ ᱟᱸᱡᱚᱢᱚᱜ ᱠᱟᱱᱟ...',
+    speakingNowHindi: 'संथाली ऑडियो बज रहा है...',
+    speakingNowEnglish: 'Playing Santhali audio...',
     teacherSpokeHindi: 'ᱜᱩᱨᱩ ᱜᱚᱢᱠᱮ ᱦᱤᱱᱫᱤ ᱛᱮ ᱢᱮᱱ ᱠᱮᱫ-ᱟ',
     teacherSpokeHindiSub: 'शिक्षक ने हिंदी में कहा • Teacher spoke in Hindi',
-    translatedInEnglish: 'ᱤᱝᱨᱟᱹᱡᱤ ᱛᱮ ᱛᱚᱨᱡᱚᱢᱟ ᱮᱱᱟ',
-    translatedInEnglishSub: 'अंग्रेजी अनुवाद (ऑडियो) • English Translation (Audio)',
-    realtimeLatency: 'ᱥᱚᱡᱷᱮ ᱛᱚᱨᱡᱚᱢᱟ',
-    realtimeLatencySub: 'रियल-टाइम • Real-time'
+    translatedInVernacular: 'ᱥᱟᱱᱛᱟᱲᱤ ᱛᱮ ᱛᱚᱨᱡᱚᱢᱟ ᱮᱱᱟ',
+    translatedInVernacularSub: 'संथाली अनुवाद (ऑडियो) • Santhali Translation (Audio)',
+    pronunciationGuide: 'ᱨᱟᱹᱲ ᱯᱟᱲᱦᱟᱣ (Pronunciation)',
+    testGreeting: 'ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ!',
+    testGreetingAudio: 'सागुन जोहार!'
   },
   hoc: {
     code: 'hoc',
@@ -148,7 +149,7 @@ const STUDENT_I18N = {
     teacherSaidSub: 'शिक्षक ने कहा • Teacher said',
     translatingText: 'तर्जुमा होबोः तना...',
     translatingSub: 'अनुवाद हो रहा है... • Translating...',
-    doubtButton: '𑢹𑣉𑣉 ᱠᱩᱞᱤ ᱢᱮᱱᱟᱜ-ᱟ! (ऐञाः कुलि मेनाः!)',
+    doubtButton: '𑢹𑣉𑣉 ᱠᱩᱞᱤ ᱢᱮᱱᱟᱜ-ᱟ! (हो कुलि मेनाः!)',
     doubtButtonHindi: 'मुझे पूछना है!',
     doubtButtonEnglish: 'I Have a Doubt!',
     doubtRaised: 'माचेत बडाय होचो एनाय!',
@@ -157,23 +158,24 @@ const STUDENT_I18N = {
     doubtWait: 'दयाकाते तांगी मे',
     doubtWaitHindi: 'कृपया प्रतीक्षा करें',
     doubtWaitEnglish: 'Please wait',
-    teacherEndedAlert: 'माचेत क्लास मुचाद केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
+    teacherEndedAlert: 'माचेत कक्षा समाप्त केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
     // Audio Pipeline Vernacular Labels
-    englishAudioTitle: 'इन्गराजि अडियो',
-    englishAudioTitleHindi: 'अंग्रेजी ऑडियो',
-    englishAudioTitleEnglish: 'English Audio',
-    replayAudio: 'अडियो रूवाड़ आंजोम',
+    vernacularAudioTitle: 'हो ऑडियो',
+    vernacularAudioTitleHindi: 'हो ऑडियो',
+    vernacularAudioTitleEnglish: 'Ho Audio',
+    replayAudio: 'ऑडियो रूवाड़ आंजोम',
     replayAudioHindi: 'ऑडियो फिर से सुनें',
     replayAudioEnglish: 'Replay Audio',
-    speakingNow: 'अडियो आंजोमोः तना...',
-    speakingNowHindi: 'ऑडियो बज रहा है...',
-    speakingNowEnglish: 'Playing audio...',
+    speakingNow: 'हो ऑडियो बज तना...',
+    speakingNowHindi: 'हो ऑडियो बज रहा है...',
+    speakingNowEnglish: 'Playing Ho audio...',
     teacherSpokeHindi: 'माचेत हिंदी ते काजी केदाः',
     teacherSpokeHindiSub: 'शिक्षक ने हिंदी में कहा • Teacher spoke in Hindi',
-    translatedInEnglish: 'इन्गराजि ते तर्जुमा एना',
-    translatedInEnglishSub: 'अंग्रेजी अनुवाद (ऑडियो) • English Translation (Audio)',
-    realtimeLatency: 'सोज्हे तर्जुमा',
-    realtimeLatencySub: 'रियल-टाइम • Real-time'
+    translatedInVernacular: '𑢹𑣉𑣉 ᱛᱮ ᱛᱚᱨᱡᱚᱢᱟ ᱮᱱᱟ',
+    translatedInVernacularSub: 'हो अनुवाद (ऑडियो) • Ho Translation (Audio)',
+    pronunciationGuide: 'उच्चारण (Pronunciation)',
+    testGreeting: '𑢹𑣉𑣉 ᱡᱚᱦᱟᱨ!',
+    testGreetingAudio: 'जोहार गिदराको!'
   },
   mun: {
     code: 'mun',
@@ -186,17 +188,17 @@ const STUDENT_I18N = {
     selectedStyle: 'bg-emerald-600 text-white shadow-lg shadow-emerald-300 dark:shadow-emerald-950/60 border-emerald-500',
     badgeLetters: 'मुण्डारी',
     // Join Screen
-    joinTitle: 'कक्षा रे बोलो',
+    joinTitle: 'मुण्डारी कक्षा रे बोलो',
     joinTitleHindi: 'कक्षा में जुड़ें',
     joinTitleEnglish: 'Join Classroom',
-    joinSubtitle: 'इतुन लागि विवरण दें',
+    joinSubtitle: 'इतुन लागि आपनाः विवरण ओलो',
     joinSubtitleHindi: 'सीखने के लिए अपनी जानकारी दें',
     joinSubtitleEnglish: 'Enter details to start learning',
-    roomCodeLabel: 'कमरा कोड (कुठी कोड)',
+    roomCodeLabel: 'कमरा कोड (कक्षा कोड)',
     roomCodeHindi: 'कमरा कोड',
     roomCodeEnglish: 'Room Code',
     roomCodePlaceholder: '1234',
-    studentNameLabel: 'आमाः नुतुम (ᱧᱩᱛᱩᱢ)',
+    studentNameLabel: 'आपनाः ञुतुम (आमाः नाम)',
     studentNameHindi: 'आपका नाम',
     studentNameEnglish: 'Your Name',
     studentNamePlaceholder: 'बिरसा मुंडा',
@@ -243,21 +245,22 @@ const STUDENT_I18N = {
     doubtWaitEnglish: 'Please wait',
     teacherEndedAlert: 'माचेत कक्षा समाप्त केदाः।\nशिक्षक ने कक्षा समाप्त कर दी है।\nTeacher has ended the class.',
     // Audio Pipeline Vernacular Labels
-    englishAudioTitle: 'इंग्लिश ऑडियो',
-    englishAudioTitleHindi: 'अंग्रेजी ऑडियो',
-    englishAudioTitleEnglish: 'English Audio',
+    vernacularAudioTitle: 'मुण्डारी ऑडियो',
+    vernacularAudioTitleHindi: 'मुण्डारी ऑडियो',
+    vernacularAudioTitleEnglish: 'Mundari Audio',
     replayAudio: 'ऑडियो रूवाड़ आंजोम',
     replayAudioHindi: 'ऑडियो फिर से सुनें',
     replayAudioEnglish: 'Replay Audio',
-    speakingNow: 'ऑडियो बज तना...',
-    speakingNowHindi: 'ऑडियो बज रहा है...',
-    speakingNowEnglish: 'Playing audio...',
+    speakingNow: 'मुण्डारी ऑडियो बज तना...',
+    speakingNowHindi: 'मुण्डारी ऑडियो बज रहा है...',
+    speakingNowEnglish: 'Playing Mundari audio...',
     teacherSpokeHindi: 'माचेत हिंदी ते रोड़ केदाः',
     teacherSpokeHindiSub: 'शिक्षक ने हिंदी में कहा • Teacher spoke in Hindi',
-    translatedInEnglish: 'इंग्लिश ते अनुवाद एना',
-    translatedInEnglishSub: 'अंग्रेजी अनुवाद (ऑडियो) • English Translation (Audio)',
-    realtimeLatency: 'सोज्हे अनुवाद',
-    realtimeLatencySub: 'रियल-टाइम • Real-time'
+    translatedInVernacular: 'मुण्डारी ते अनुवाद एना',
+    translatedInVernacularSub: 'मुण्डारी अनुवाद (ऑडियो) • Mundari Translation (Audio)',
+    pronunciationGuide: 'उच्चारण (Pronunciation)',
+    testGreeting: 'जोहार होनको!',
+    testGreetingAudio: 'जोहार होनको!'
   }
 };
 
@@ -271,9 +274,11 @@ function StudentDashboard() {
   const [motherTongue, setMotherTongue] = useState('sat');
   const [teacherName, setTeacherName] = useState('');
   
-  // Real-time speech & audio state
-  const [currentEnglish, setCurrentEnglish] = useState('');
+  // Real-time speech & mother tongue audio state
+  const [currentVernacular, setCurrentVernacular] = useState('');
+  const [currentPhonetic, setCurrentPhonetic] = useState('');
   const [currentHindi, setCurrentHindi] = useState('');
+  const [currentEnglish, setCurrentEnglish] = useState('');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [latencyMs, setLatencyMs] = useState(null);
   const [isDoubtRaised, setIsDoubtRaised] = useState(false);
@@ -296,11 +301,11 @@ function StudentDashboard() {
   }, []);
 
   /**
-   * Plays translated English text instantly through student speakers using Dual-Engine Architecture:
-   * 1. Primary Engine: High-fidelity natural MP3 audio streamed from server (/api/tts)
+   * Plays translated mother tongue audio through student speakers using Dual-Engine Architecture:
+   * 1. Primary Engine: High-fidelity natural audio streamed from server (/api/tts)
    * 2. Secondary Engine: Robust local window.speechSynthesis with garbage-collection protection & auto-resume
    */
-  const playEnglishAudio = async (textToPlay) => {
+  const playVernacularAudio = async (textToPlay, lang = 'hi') => {
     const text = (textToPlay || '').trim();
     if (!text) return;
 
@@ -322,7 +327,7 @@ function StudentDashboard() {
 
     // Try Engine A: High-fidelity natural voice from server /api/tts via HTML5 Audio
     try {
-      const audioUrl = `http://localhost:3001/api/tts?text=${encodeURIComponent(text)}&lang=en&t=${Date.now()}`;
+      const audioUrl = `http://localhost:3001/api/tts?text=${encodeURIComponent(text)}&lang=${lang}&t=${Date.now()}`;
       const audio = new Audio(audioUrl);
       currentAudioRef.current = audio;
 
@@ -334,7 +339,7 @@ function StudentDashboard() {
       audio.onerror = (e) => {
         console.warn('[Audio Player] Server TTS stream failed or offline, falling back to Web Speech API:', e);
         currentAudioRef.current = null;
-        speakWithWebSpeechFallback(text);
+        speakWithWebSpeechFallback(text, lang);
       };
 
       const playPromise = audio.play();
@@ -344,14 +349,14 @@ function StudentDashboard() {
       return;
     } catch (audioErr) {
       console.warn('[Audio Player] HTML5 Audio play error, trying Web Speech fallback:', audioErr);
-      speakWithWebSpeechFallback(text);
+      speakWithWebSpeechFallback(text, lang);
     }
   };
 
   /**
    * Fallback engine using Web Speech API with Chromium deadlock and GC protection
    */
-  const speakWithWebSpeechFallback = (text) => {
+  const speakWithWebSpeechFallback = (text, lang = 'hi') => {
     if (!('speechSynthesis' in window)) {
       setIsPlayingAudio(false);
       return;
@@ -363,7 +368,7 @@ function StudentDashboard() {
       }
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
+      utterance.lang = lang === 'en' ? 'en-US' : 'hi-IN';
       utterance.rate = 0.95;
       utterance.pitch = 1.0;
 
@@ -373,11 +378,12 @@ function StudentDashboard() {
 
       const voices = window.speechSynthesis.getVoices();
       if (voices && voices.length > 0) {
-        const enVoice = 
-          voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('David'))) ||
-          voices.find(v => v.lang.startsWith('en'));
-        if (enVoice) {
-          utterance.voice = enVoice;
+        const matchingVoice = 
+          voices.find(v => v.lang.startsWith(lang === 'en' ? 'en' : 'hi') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('India'))) ||
+          voices.find(v => v.lang.startsWith(lang === 'en' ? 'en' : 'hi')) ||
+          voices[0];
+        if (matchingVoice) {
+          utterance.voice = matchingVoice;
         }
       }
 
@@ -407,18 +413,46 @@ function StudentDashboard() {
 
   useEffect(() => {
     socket.on('receive-transcript', (data) => {
-      const eng = data.englishText || data.text || '';
-      const hin = data.hindiText || data.text || '';
+      let targetText = '';
+      let phoneticText = '';
+
+      if (motherTongue === 'sat') {
+        // Santhali student receives and hears Santhali!
+        const satData = data.santhali;
+        targetText = typeof satData === 'object' ? (satData.text || satData.olChiki || '') : (satData || '');
+        phoneticText = typeof satData === 'object' ? (satData.phonetic || satData.devanagari || targetText) : targetText;
+      } else if (motherTongue === 'hoc') {
+        // Ho student receives and hears Ho!
+        const hoData = data.ho;
+        targetText = typeof hoData === 'object' ? (hoData.text || hoData.native || '') : (hoData || '');
+        phoneticText = typeof hoData === 'object' ? (hoData.phonetic || targetText) : targetText;
+      } else if (motherTongue === 'mun') {
+        // Mundari student receives and hears Mundari!
+        const munData = data.mundari;
+        targetText = typeof munData === 'object' ? (munData.text || munData.native || '') : (munData || '');
+        phoneticText = typeof munData === 'object' ? (munData.phonetic || targetText) : targetText;
+      }
+
+      if (!targetText) {
+        targetText = data.text || data.hindiText || '';
+        phoneticText = targetText;
+      }
+
+      const hin = (data.hindiText || data.text || '').trim();
+      const eng = (data.englishText || '').trim();
       const receivedAt = Date.now();
       const elapsed = data.timestamp ? (receivedAt - data.timestamp) : null;
 
-      setCurrentEnglish(eng);
+      setCurrentVernacular(targetText);
+      setCurrentPhonetic(phoneticText);
       setCurrentHindi(hin);
+      setCurrentEnglish(eng);
       setLatencyMs(elapsed);
 
-      // Instant English audio playback via dual-engine player
-      if (eng) {
-        playEnglishAudio(eng);
+      // Instant Mother Tongue audio playback!
+      const audioToPlay = phoneticText || targetText;
+      if (audioToPlay) {
+        playVernacularAudio(audioToPlay, 'hi');
       }
     });
 
@@ -431,8 +465,10 @@ function StudentDashboard() {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
-      setCurrentEnglish('');
+      setCurrentVernacular('');
+      setCurrentPhonetic('');
       setCurrentHindi('');
+      setCurrentEnglish('');
       setIsPlayingAudio(false);
       setIsDoubtRaised(false);
       setStep('join');
@@ -454,11 +490,6 @@ function StudentDashboard() {
   const joinRoom = () => {
     if (!roomCode || !studentName) return;
     
-    // User interaction primes audio context
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.resume();
-    }
-
     socket.emit('join-room', { roomCode, studentName, motherTongue }, (res) => {
       if (res.success) {
         setTeacherName(res.roomDetails.teacherName);
@@ -470,108 +501,103 @@ function StudentDashboard() {
   };
 
   const raiseDoubt = () => {
+    if (isDoubtRaised) return;
     setIsDoubtRaised(true);
     socket.emit('raise-doubt', { roomCode });
-    
-    // Reset doubt status after a few seconds
-    setTimeout(() => {
-      setIsDoubtRaised(false);
-    }, 5000);
   };
 
   if (step === 'join') {
     return (
-      <div className="min-h-screen bg-sky-50 dark:bg-slate-950 flex items-center justify-center p-4 relative transition-colors duration-200">
-        <div className="absolute top-6 right-6 z-10">
-          <ThemeToggle showLabel />
-        </div>
-
-        <div className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 border border-transparent dark:border-slate-800 transition-colors">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className={`text-3xl sm:text-4xl font-black text-sky-900 dark:text-sky-300 mb-1 transition-colors ${t.fontFamily}`}>
-              {t.joinTitle}
-            </h1>
-            <p className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-              {t.joinTitleHindi} • {t.joinTitleEnglish}
-            </p>
-            <p className={`text-slate-700 dark:text-slate-300 font-bold text-sm mt-2 transition-colors ${t.fontFamily}`}>
-              {t.joinSubtitle}
-            </p>
-            <p className="text-slate-400 dark:text-slate-500 font-medium text-xs">
-              {t.joinSubtitleHindi} • {t.joinSubtitleEnglish}
-            </p>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 md:p-6 transition-colors duration-200">
+        <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-6 md:p-8 border-2 border-slate-100 dark:border-slate-800 transition-colors">
+          
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-sky-100 dark:bg-sky-950/60 rounded-2xl flex items-center justify-center text-sky-600 dark:text-sky-400 font-black text-xl">
+                🎒
+              </div>
+              <div>
+                <h1 className={`text-2xl font-black text-slate-800 dark:text-slate-100 ${t.fontFamily}`}>
+                  {t.joinTitle}
+                </h1>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">
+                  {t.joinTitleHindi} • {t.joinTitleEnglish}
+                </p>
+              </div>
+            </div>
+            <ThemeToggle showLabel={false} />
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Room Code */}
             <div>
-              <label className="block mb-2 transition-colors">
-                <span className={`text-base font-black text-slate-800 dark:text-slate-200 block ${t.fontFamily}`}>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <span className={`text-sm font-black text-slate-800 dark:text-slate-200 mr-2 ${t.fontFamily}`}>
                   {t.roomCodeLabel}
                 </span>
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 block">
-                  {t.roomCodeHindi} • {t.roomCodeEnglish}
-                </span>
+                <span className="opacity-75">({t.roomCodeHindi} / {t.roomCodeEnglish})</span>
               </label>
-              <input 
-                type="number" 
-                className="w-full text-center text-4xl font-black tracking-[0.5em] text-sky-900 dark:text-sky-300 bg-sky-50 dark:bg-slate-800/80 border-2 border-sky-100 dark:border-slate-700 rounded-2xl py-4 focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/40 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
+              <input
+                type="text"
                 value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                 placeholder={t.roomCodePlaceholder}
-                maxLength={4}
+                maxLength={6}
+                className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-center text-2xl font-black tracking-widest text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
               />
             </div>
 
             {/* Student Name */}
             <div>
-              <label className="block mb-2 transition-colors">
-                <span className={`text-base font-black text-slate-800 dark:text-slate-200 block ${t.fontFamily}`}>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <span className={`text-sm font-black text-slate-800 dark:text-slate-200 mr-2 ${t.fontFamily}`}>
                   {t.studentNameLabel}
                 </span>
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 block">
-                  {t.studentNameHindi} • {t.studentNameEnglish}
-                </span>
+                <span className="opacity-75">({t.studentNameHindi} / {t.studentNameEnglish})</span>
               </label>
-              <input 
-                type="text" 
-                className="w-full text-lg font-bold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-sky-400 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              <input
+                type="text"
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
-                placeholder={`${t.studentNamePlaceholder} (${t.studentNamePlaceholderSub})`}
+                placeholder={t.studentNamePlaceholder}
+                className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-base font-bold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
               />
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold mt-1">
+                {t.studentNamePlaceholderSub}
+              </p>
             </div>
 
-            {/* Language Selector */}
+            {/* Mother Tongue Selector */}
             <div>
-              <label className="block mb-2 transition-colors">
-                <span className={`text-base font-black text-slate-800 dark:text-slate-200 block ${t.fontFamily}`}>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                <span className={`text-sm font-black text-slate-800 dark:text-slate-200 mr-2 ${t.fontFamily}`}>
                   {t.chooseLangLabel}
                 </span>
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 block">
-                  {t.chooseLangHindi} • {t.chooseLangEnglish}
-                </span>
+                <span className="opacity-75">({t.chooseLangHindi} / {t.chooseLangEnglish})</span>
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {LANGUAGES.map(lang => {
+
+              <div className="grid grid-cols-3 gap-2.5">
+                {LANGUAGES.map((lang) => {
                   const isSelected = motherTongue === lang.code;
                   return (
                     <button
                       key={lang.code}
                       type="button"
                       onClick={() => setMotherTongue(lang.code)}
-                      className={`p-3.5 rounded-2xl font-bold transition-all border-2 cursor-pointer flex flex-col items-center justify-center text-center ${
+                      className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center text-center cursor-pointer ${
                         isSelected 
-                          ? `${lang.selectedStyle} scale-105 ring-4 ring-sky-200/50 dark:ring-sky-900/50` 
-                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750'
+                          ? `${lang.selectedStyle} scale-105` 
+                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-300'
                       }`}
                     >
-                      <span className={`text-xl sm:text-lg font-black block tracking-wide ${lang.fontFamily}`}>
+                      <span className={`text-lg font-black block mb-0.5 ${lang.fontFamily}`}>
                         {lang.nativeName}
                       </span>
-                      <span className={`text-[11px] font-semibold block mt-1 tracking-tight ${isSelected ? 'text-white/90' : 'text-slate-400 dark:text-slate-400'}`}>
-                        {lang.hindiSubtitle} • {lang.englishSubtitle}
+                      <span className="text-[11px] font-bold block opacity-90">
+                        {lang.hindiSubtitle}
+                      </span>
+                      <span className="text-[9px] font-semibold block opacity-75">
+                        {lang.englishSubtitle}
                       </span>
                     </button>
                   );
@@ -615,7 +641,7 @@ function StudentDashboard() {
     );
   }
 
-  // Class Interface (Highly expressive, vernacular-first with live audio pipeline)
+  // Class Interface (Vernacular-first with live mother tongue audio pipeline)
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col p-4 md:p-8 transition-colors duration-200">
       {/* Header */}
@@ -654,13 +680,14 @@ function StudentDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Test Sound Button */}
           <button
-            onClick={() => playEnglishAudio("Sound check: audio feedback is active and working perfectly.")}
+            onClick={() => playVernacularAudio(t.testGreetingAudio || 'जोहार', 'hi')}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-            title="Click to test audio playback through your speakers"
+            title="Click to test mother tongue audio playback"
           >
             <Volume2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-            <span>Test Sound</span>
+            <span className={t.fontFamily}>{t.testGreeting} (Test Audio)</span>
           </button>
 
           <ThemeToggle />
@@ -668,12 +695,18 @@ function StudentDashboard() {
           <button
             onClick={() => {
               if (window.confirm(t.leaveConfirm)) {
+                if (currentAudioRef.current) {
+                  try { currentAudioRef.current.pause(); } catch (e) {}
+                  currentAudioRef.current = null;
+                }
                 if ('speechSynthesis' in window) {
                   window.speechSynthesis.cancel();
                 }
                 setStep('join');
-                setCurrentEnglish('');
+                setCurrentVernacular('');
+                setCurrentPhonetic('');
                 setCurrentHindi('');
+                setCurrentEnglish('');
                 setIsPlayingAudio(false);
                 setIsDoubtRaised(false);
               }
@@ -725,19 +758,19 @@ function StudentDashboard() {
 
         {/* Central Translation Display */}
         <div className="max-w-3xl w-full text-center py-6">
-          {currentEnglish ? (
+          {currentVernacular ? (
             <div className="space-y-6">
               {/* Mother tongue header badge */}
               <div className="inline-flex flex-col items-center gap-0.5 px-5 py-2 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 rounded-2xl">
                 <span className={`text-sm font-black text-sky-800 dark:text-sky-200 ${t.fontFamily}`}>
-                  {t.translatedInEnglish}
+                  {t.translatedInVernacular}
                 </span>
                 <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
-                  {t.translatedInEnglishSub}
+                  {t.translatedInVernacularSub}
                 </span>
               </div>
 
-              {/* Translated English Speech (Spoken to student) */}
+              {/* Translated Mother Tongue Speech (Large Typography) */}
               <div className="p-6 md:p-8 bg-sky-50/50 dark:bg-slate-800/60 border-2 border-sky-100 dark:border-slate-700 rounded-3xl shadow-sm relative">
                 {latencyMs !== null && (
                   <div className="absolute -top-3.5 right-6 px-3 py-1 bg-emerald-500 text-white rounded-full text-xs font-bold shadow-md flex items-center gap-1">
@@ -746,32 +779,57 @@ function StudentDashboard() {
                   </div>
                 )}
 
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight">
-                  "{currentEnglish}"
+                {/* Primary Mother Tongue Text */}
+                <h1 className={`text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight ${t.fontFamily}`}>
+                  "{currentVernacular}"
                 </h1>
+
+                {/* Phonetic Pronunciation helper if text is in Ol Chiki or Warang Chiti */}
+                {currentPhonetic && currentPhonetic !== currentVernacular && (
+                  <div className="mt-3 inline-block px-4 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mr-2">
+                      {t.pronunciationGuide}:
+                    </span>
+                    <span className="text-base font-bold text-sky-700 dark:text-sky-300">
+                      "{currentPhonetic}"
+                    </span>
+                  </div>
+                )}
+
+                {/* English Subtitle */}
+                {currentEnglish && (
+                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/60">
+                    <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase">
+                      English Subtitle:
+                    </span>
+                    <p className="text-base sm:text-lg font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
+                      "{currentEnglish}"
+                    </p>
+                  </div>
+                )}
 
                 {/* Original Hindi subtitle (Teacher's speech) */}
                 {currentHindi && (
-                  <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col items-center">
+                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/60 flex flex-col items-center">
                     <span className={`text-xs font-black text-slate-600 dark:text-slate-400 ${t.fontFamily}`}>
                       {t.teacherSpokeHindi}:
                     </span>
-                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mb-1">
+                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">
                       {t.teacherSpokeHindiSub}
                     </span>
-                    <p className="text-lg md:text-xl font-bold text-slate-600 dark:text-slate-300">
+                    <p className="text-base sm:text-lg font-bold text-slate-500 dark:text-slate-400">
                       "{currentHindi}"
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Replay Audio Button */}
+              {/* Replay Audio Button in Mother Tongue */}
               <div className="flex justify-center">
                 <button
-                  onClick={() => playEnglishAudio(currentEnglish)}
+                  onClick={() => playVernacularAudio(currentPhonetic || currentVernacular, 'hi')}
                   className="px-6 py-3 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border-2 border-emerald-300 dark:border-emerald-700 rounded-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
-                  title="Listen to this translation again"
+                  title="Listen to this translation in your mother tongue again"
                 >
                   <RotateCcw className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <div className="text-left leading-tight">

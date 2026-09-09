@@ -22,7 +22,7 @@ import {
   ExternalLink,
   ShieldCheck
 } from 'lucide-react';
-import { translateHindiToEnglish } from '../services/translator';
+import { translateHindiToAll } from '../services/translator';
 import { startRecording, stopRecording } from '../services/audioRecorder';
 import ThemeToggle from './ThemeToggle';
 
@@ -56,9 +56,12 @@ function TeacherDashboard() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
 
-  // Transmission results
+  // Transmission results (multilingual mother tongue routing)
   const [hindiTranscript, setHindiTranscript] = useState('');
   const [englishTranslation, setEnglishTranslation] = useState('');
+  const [santhaliTranslation, setSanthaliTranslation] = useState(null);
+  const [hoTranslation, setHoTranslation] = useState(null);
+  const [mundariTranslation, setMundariTranslation] = useState(null);
   const [latency, setLatency] = useState(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [customText, setCustomText] = useState('');
@@ -203,13 +206,16 @@ function TeacherDashboard() {
     setStudents([]);
     setHindiTranscript('');
     setEnglishTranslation('');
+    setSanthaliTranslation(null);
+    setHoTranslation(null);
+    setMundariTranslation(null);
     setStatusMessage('');
     setLatency(null);
     setDoubts([]);
   };
 
   /**
-   * Translates Hindi speech to English and broadcasts to classroom in real-time
+   * Translates Hindi speech to all student mother tongues (Santhali, Ho, Mundari) + English in real time
    */
   const handleProcessHindiSpeech = async (hindiText, startTime = null) => {
     const text = (hindiText || '').trim();
@@ -221,21 +227,26 @@ function TeacherDashboard() {
 
     const t0 = startTime || Date.now();
     try {
-      const res = await translateHindiToEnglish(text);
+      const res = await translateHindiToAll(text);
       const elapsed = Date.now() - t0;
 
-      setEnglishTranslation(res.translatedText);
+      setEnglishTranslation(res.english);
+      setSanthaliTranslation(res.santhali);
+      setHoTranslation(res.ho);
+      setMundariTranslation(res.mundari);
       setLatency(elapsed);
       setIsTranslating(false);
 
-      // Emit to students with sub-second turnaround
+      // Emit to students with full multilingual payload
       socket.emit('send-transcript', {
         roomCode,
         hindiText: text,
-        englishText: res.translatedText,
+        santhali: res.santhali,
+        ho: res.ho,
+        mundari: res.mundari,
+        englishText: res.english,
         text: text,
         originalLang: 'hi',
-        targetLang: 'en',
         timestamp: Date.now()
       });
     } catch (err) {
@@ -335,25 +346,39 @@ function TeacherDashboard() {
             if (sttRes && sttRes.success && sttRes.hindiText) {
               const recognizedHindi = sttRes.hindiText.trim();
               const englishTrans = (sttRes.englishText || '').trim();
+              const satTrans = sttRes.santhali;
+              const hoTrans = sttRes.ho;
+              const munTrans = sttRes.mundari;
               const elapsedMs = sttRes.latencyMs || (Date.now() - captureStartTime);
 
-              console.log('[Gemini STT Output]:', { hindi: recognizedHindi, english: englishTrans });
+              console.log('[Gemini STT Multilingual Output]:', {
+                hindi: recognizedHindi,
+                santhali: satTrans,
+                ho: hoTrans,
+                mundari: munTrans,
+                english: englishTrans
+              });
 
               setHindiTranscript(recognizedHindi);
               setStatusMessage('');
 
-              if (englishTrans) {
-                // Direct joint transcription + translation from Gemini!
+              if (satTrans || hoTrans || munTrans || englishTrans) {
+                // Direct joint transcription + multi-target mother tongue translation from Gemini!
                 setEnglishTranslation(englishTrans);
+                setSanthaliTranslation(satTrans);
+                setHoTranslation(hoTrans);
+                setMundariTranslation(munTrans);
                 setLatency(elapsedMs);
 
                 socket.emit('send-transcript', {
                   roomCode,
                   hindiText: recognizedHindi,
+                  santhali: satTrans,
+                  ho: hoTrans,
+                  mundari: munTrans,
                   englishText: englishTrans,
                   text: recognizedHindi,
                   originalLang: 'hi',
-                  targetLang: 'en',
                   timestamp: Date.now()
                 });
               } else {
@@ -629,8 +654,8 @@ function TeacherDashboard() {
             {isRecording 
               ? 'अपना वाक्य हिंदी में बोलें, फिर अनुवाद करने के लिए दोबारा बटन दबाएं।' 
               : isTranscribing
-                ? 'कृपया प्रतीक्षा करें, Google Gemini द्वारा हिंदी भाषण को अंग्रेजी में बदला जा रहा है।'
-                : 'माइक बटन दबाएं और हिंदी में बोलें। छात्र इसे तुरंत अंग्रेजी में सुनेंगे।'}
+                ? 'कृपया प्रतीक्षा करें, Google Gemini द्वारा हिंदी भाषण को संथाली, हो, मुण्डारी और अंग्रेजी में बदला जा रहा है...'
+                : 'माइक बटन दबाएं और हिंदी में बोलें। छात्र इसे तुरंत अपनी-अपनी मातृभाषा में सुनेंगे।'}
           </p>
 
           {/* Error / Status Guidance Banner */}
@@ -641,13 +666,13 @@ function TeacherDashboard() {
             </div>
           )}
 
-          {/* Live Translation Card (Latest Spoken & Translated) */}
+          {/* Live Multilingual Transmission Card */}
           {(hindiTranscript || isTranslating) && (
             <div className="mt-6 p-5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl shadow-sm transition-colors">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  Latest Voice Transmission (Gemini STT)
+                  Latest Voice Transmission (Multilingual Mother Tongue Routing)
                 </span>
                 {latency !== null && (
                   <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
@@ -658,21 +683,100 @@ function TeacherDashboard() {
               </div>
 
               {/* Hindi Original */}
-              <div className="mb-3">
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase">Hindi (Voice Recognized)</span>
+              <div className="mb-4">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase">Hindi (Teacher Spoke)</span>
                 <p className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                   "{hindiTranscript}"
                 </p>
               </div>
 
-              {/* English Translation */}
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase flex items-center gap-1">
-                  <Volume2 className="w-3.5 h-3.5" /> English (Spoken to Students)
-                </span>
-                <p className="text-xl font-black text-sky-700 dark:text-sky-300 mt-0.5">
-                  {isTranslating ? 'Translating to English...' : `"${englishTranslation}"`}
-                </p>
+              {/* Simultaneous Vernacular Audio Broadcasts */}
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-500" />
+                    Live Student Feeds (Broadcast in Mother Tongue)
+                  </span>
+                  {isTranslating && (
+                    <span className="text-xs text-amber-500 flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Translating...
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                  {/* Santhali */}
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-purple-200 dark:border-purple-900/50 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-black text-purple-700 dark:text-purple-300">
+                        ᱥᱟᱱᱛᱟᱲᱤ (Santhali)
+                      </span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-ol-chiki">
+                        Ol Chiki
+                      </span>
+                    </div>
+                    <p className="text-base font-black text-purple-900 dark:text-purple-100 font-ol-chiki">
+                      {santhaliTranslation ? (typeof santhaliTranslation === 'object' ? (santhaliTranslation.text || santhaliTranslation.olChiki) : santhaliTranslation) : (isTranslating ? '...' : '')}
+                    </p>
+                    {santhaliTranslation?.phonetic && santhaliTranslation.phonetic !== (santhaliTranslation.text || santhaliTranslation.olChiki) && (
+                      <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+                        Audio: "{santhaliTranslation.phonetic}"
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Ho */}
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-blue-200 dark:border-blue-900/50 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-black text-blue-700 dark:text-blue-300">
+                        𑢹𑣉𑣉 (Ho)
+                      </span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                        हो
+                      </span>
+                    </div>
+                    <p className="text-base font-black text-blue-900 dark:text-blue-100 font-warang-chiti">
+                      {hoTranslation ? (typeof hoTranslation === 'object' ? (hoTranslation.text || hoTranslation.native) : hoTranslation) : (isTranslating ? '...' : '')}
+                    </p>
+                    {hoTranslation?.phonetic && (
+                      <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+                        Audio: "{hoTranslation.phonetic}"
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Mundari */}
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-emerald-200 dark:border-emerald-900/50 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+                        मुण्डारी (Mundari)
+                      </span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                        मुण्डारी
+                      </span>
+                    </div>
+                    <p className="text-base font-black text-emerald-900 dark:text-emerald-100 font-devanagari">
+                      {mundariTranslation ? (typeof mundariTranslation === 'object' ? (mundariTranslation.text || mundariTranslation.native) : mundariTranslation) : (isTranslating ? '...' : '')}
+                    </p>
+                    {mundariTranslation?.phonetic && mundariTranslation.phonetic !== (mundariTranslation.text || mundariTranslation.native) && (
+                      <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+                        Audio: "{mundariTranslation.phonetic}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* English Subtitle */}
+                {englishTranslation && (
+                  <div className="pt-2">
+                    <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase">
+                      English Subtitle:
+                    </span>
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
+                      "{englishTranslation}"
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
