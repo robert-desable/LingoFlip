@@ -515,9 +515,19 @@ function StudentDashboard() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/60 rounded-2xl flex items-center justify-center transition-colors">
-                <div className="w-8 h-8 bg-amber-600 dark:bg-amber-400 mix-blend-multiply relative overflow-hidden">
-                  <img src={studentLogo} alt="Student Logo" className="absolute inset-0 w-full h-full object-contain mix-blend-screen bg-white" />
-                </div>
+                <div 
+                  className="w-8 h-8 bg-amber-600 dark:bg-amber-400"
+                  style={{
+                    WebkitMaskImage: `url(${studentLogo})`,
+                    WebkitMaskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskImage: `url(${studentLogo})`,
+                    maskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    maskPosition: 'center'
+                  }}
+                />
               </div>
               <div>
                 <h1 className={`text-2xl font-black text-slate-800 dark:text-slate-100 ${t.fontFamily}`}>

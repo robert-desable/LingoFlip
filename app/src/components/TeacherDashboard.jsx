@@ -332,7 +332,19 @@ function TeacherDashboard() {
 
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 text-center border border-transparent dark:border-slate-800 transition-colors">
           <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
-            <div className="w-10 h-10 bg-emerald-600 dark:bg-emerald-400 mix-blend-multiply relative rounded-full overflow-hidden"><img src={teacherLogo} alt="Teacher Logo" className="absolute inset-0 w-full h-full object-contain mix-blend-screen bg-white" /></div>
+            <div 
+              className="w-10 h-10 bg-emerald-600 dark:bg-emerald-400"
+              style={{
+                WebkitMaskImage: `url(${teacherLogo})`,
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: `url(${teacherLogo})`,
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center'
+              }}
+            />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Teacher Mode</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-8 transition-colors">Start a new class lobby and share the code with your students.</p>
