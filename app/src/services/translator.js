@@ -89,7 +89,8 @@ export async function translateHindiToAll(hindiText) {
 
   // 2. Query server AI translation endpoint
   try {
-    const res = await axios.post('http://localhost:3001/api/translate-text', {
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const res = await axios.post(`${BACKEND_URL}/api/translate-text`, {
       text: trimmed
     }, { timeout: 3500 });
 
