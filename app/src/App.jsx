@@ -19,7 +19,7 @@ function RoleSelection() {
       <div className="max-w-2xl w-full">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-sky-900 dark:text-sky-200 mb-4 transition-colors">
-            Classroom Translator
+            LingoFlip
           </h1>
           <p className="text-xl text-sky-700 dark:text-sky-400 transition-colors">
             Choose how you want to join
