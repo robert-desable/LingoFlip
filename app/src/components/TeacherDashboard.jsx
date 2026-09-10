@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { 
-  Users, 
-  Mic, 
-  Square, 
-  Hand, 
-  AlertCircle, 
-  PhoneOff, 
-  ArrowLeft, 
-  Send, 
-  Sparkles, 
-  Volume2, 
-  Zap, 
+import {
+  Users,
+  Mic,
+  Square,
+  Hand,
+  AlertCircle,
+  PhoneOff,
+  ArrowLeft,
+  Send,
+  Sparkles,
+  Volume2,
+  Zap,
   CheckCircle2,
   Radio,
   Loader2,
@@ -26,7 +26,8 @@ import { translateHindiToAll } from '../services/translator';
 import { startRecording, stopRecording } from '../services/audioRecorder';
 import ThemeToggle from './ThemeToggle';
 
-const socket = io('http://localhost:3001');
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const socket = io(BACKEND_URL);
 
 const LANG_MAP = {
   sat: { name: 'Santhali', native: 'ᱥᱟᱱᱛᱟᱲᱤ', hindi: 'संथाली', font: 'font-ol-chiki' },
@@ -71,6 +72,41 @@ function TeacherDashboard() {
   const startTimeRef = useRef(0);
   const isActionInProgressRef = useRef(false);
 
+
+
+  // Fetch initial API key status and sync with localStorage
+  const checkApiKeyStatus = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/key-status`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.hasKey) {
+          setHasApiKey(true);
+          setKeyPreview(data.preview || '');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not check server API key status:', e);
+    }
+
+    // Check local storage fallback
+    const savedLocalKey = localStorage.getItem('palash_gemini_key');
+    if (savedLocalKey && savedLocalKey.length > 8) {
+      try {
+        const syncRes = await fetch(`${BACKEND_URL}/api/set-api-key`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: savedLocalKey })
+        });
+        if (syncRes.ok) {
+          setHasApiKey(true);
+          setKeyPreview(`${savedLocalKey.substring(0, 4)}...${savedLocalKey.slice(-4)}`);
+        }
+      } catch (err) { }
+    }
+  };
+
   useEffect(() => {
 
     socket.on('student-joined', (student) => {
@@ -95,6 +131,43 @@ function TeacherDashboard() {
       }
     };
   }, []);
+
+  const handleSaveApiKey = async (e) => {
+    e?.preventDefault();
+    const key = apiKeyInput.trim();
+    if (!key) return;
+
+    setIsSavingKey(true);
+    setKeySaveSuccess('');
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/set-api-key`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: key })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('palash_gemini_key', key);
+        setHasApiKey(true);
+        setKeyPreview(`${key.substring(0, 4)}...${key.slice(-4)}`);
+        setKeySaveSuccess('Gemini API Key saved successfully! Speech recognition is ready.');
+        setTimeout(() => {
+          setShowKeyModal(false);
+          setKeySaveSuccess('');
+          setApiKeyInput('');
+        }, 1500);
+      } else {
+        alert(data.message || 'Failed to save key');
+      }
+    } catch (err) {
+      alert('Error saving API Key: ' + err.message);
+    } finally {
+      setIsSavingKey(false);
+    }
+  };
+
 
   const createRoom = () => {
     socket.emit('create-room', { teacherName: 'Teacher', language: 'hi' }, (res) => {
@@ -334,13 +407,13 @@ function TeacherDashboard() {
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Teacher Mode</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-8 transition-colors">Start a new class lobby and share the code with your students.</p>
           <div className="flex flex-col gap-3">
-            <button 
+            <button
               onClick={createRoom}
               className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white rounded-2xl text-xl font-bold transition-all shadow-lg shadow-emerald-200 dark:shadow-emerald-950/40 cursor-pointer"
             >
               Create Class Room
             </button>
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="w-full py-3 flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-semibold transition-colors cursor-pointer"
             >
@@ -396,7 +469,7 @@ function TeacherDashboard() {
 
         {/* Microphone & Live Translation Control */}
         <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm dark:shadow-slate-950/50 flex flex-col items-center border-2 border-slate-100 dark:border-slate-800 transition-colors">
-          
+
           {/* Status Badge */}
           <div className="mb-4">
             {isRecording ? (
@@ -415,16 +488,15 @@ function TeacherDashboard() {
           </div>
 
           {/* Big Mic Button with Dynamic Scale and Ring */}
-          <button 
+          <button
             onClick={toggleRecording}
             disabled={isTranscribing}
-            className={`w-40 h-40 md:w-44 md:h-44 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 cursor-pointer select-none relative ${
-              isRecording 
-                ? 'bg-red-500 hover:bg-red-600 ring-8 ring-red-300 dark:ring-red-950/70 scale-105' 
+            className={`w-40 h-40 md:w-44 md:h-44 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 cursor-pointer select-none relative ${isRecording
+                ? 'bg-red-500 hover:bg-red-600 ring-8 ring-red-300 dark:ring-red-950/70 scale-105'
                 : isTranscribing
                   ? 'bg-amber-500 opacity-80 cursor-wait'
                   : 'bg-emerald-500 hover:bg-emerald-600 ring-8 ring-emerald-50 dark:ring-emerald-950/50 hover:scale-105 active:scale-95'
-            }`}
+              }`}
             title={isRecording ? 'Click to stop and translate your voice' : 'Click to start speaking in Hindi'}
           >
             {isTranscribing ? (
@@ -454,15 +526,15 @@ function TeacherDashboard() {
           )}
 
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-5 transition-colors">
-            {isRecording 
-              ? `बोल रहे हैं... (${recordingSeconds}s)` 
-              : isTranscribing 
-                ? 'Gemini आवाज़ पहचान रहा है...' 
+            {isRecording
+              ? `बोल रहे हैं... (${recordingSeconds}s)`
+              : isTranscribing
+                ? 'Gemini आवाज़ पहचान रहा है...'
                 : 'Tap to Speak in Hindi'}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-center max-w-md text-sm transition-colors">
-            {isRecording 
-              ? 'अपना वाक्य हिंदी में बोलें, फिर अनुवाद करने के लिए दोबारा बटन दबाएं।' 
+            {isRecording
+              ? 'अपना वाक्य हिंदी में बोलें, फिर अनुवाद करने के लिए दोबारा बटन दबाएं।'
               : isTranscribing
                 ? 'कृपया प्रतीक्षा करें, Google Gemini द्वारा हिंदी भाषण को संथाली, हो, मुण्डारी और अंग्रेजी में बदला जा रहा है...'
                 : 'माइक बटन दबाएं और हिंदी में बोलें। छात्र इसे तुरंत अपनी-अपनी मातृभाषा में सुनेंगे।'}
@@ -651,7 +723,7 @@ function TeacherDashboard() {
             </div>
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Student Doubts</h2>
           </div>
-          
+
           <div className="space-y-4">
             {doubts.length === 0 ? (
               <p className="text-slate-400 dark:text-slate-500 text-center py-8">No questions right now.</p>
@@ -677,7 +749,7 @@ function TeacherDashboard() {
                       <p>"{doubt.student.name} asked for clarification"</p>
                     )}
                   </div>
-                  <button 
+                  <button
                     onClick={() => setDoubts(doubts.filter((_, i) => i !== idx))}
                     className="w-full mt-3 py-2 bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 font-bold rounded-xl hover:bg-rose-100 dark:hover:bg-slate-800 border border-transparent dark:border-rose-900/40 transition-colors cursor-pointer"
                   >
