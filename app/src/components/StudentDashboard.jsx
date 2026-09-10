@@ -514,7 +514,7 @@ function StudentDashboard() {
           
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center transition-colors">
+              <div className="w-24 h-24 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center transition-colors">
                 <div 
                   className="w-full h-full bg-amber-600 dark:bg-amber-400"
                   style={{
