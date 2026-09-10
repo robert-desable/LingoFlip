@@ -66,54 +66,12 @@ function TeacherDashboard() {
   const [isTranslating, setIsTranslating] = useState(false);
   const [customText, setCustomText] = useState('');
 
-  // Gemini API Key Management
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [keyPreview, setKeyPreview] = useState('');
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [isSavingKey, setIsSavingKey] = useState(false);
-  const [keySaveSuccess, setKeySaveSuccess] = useState('');
-
   // Timer & click locks
   const timerRef = useRef(null);
   const startTimeRef = useRef(0);
   const isActionInProgressRef = useRef(false);
 
-  // Fetch initial API key status and sync with localStorage
-  const checkApiKeyStatus = async () => {
-    try {
-      const res = await fetch('http://localhost:3001/api/key-status');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.hasKey) {
-          setHasApiKey(true);
-          setKeyPreview(data.preview || '');
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('Could not check server API key status:', e);
-    }
-
-    // Check local storage fallback
-    const savedLocalKey = localStorage.getItem('palash_gemini_key');
-    if (savedLocalKey && savedLocalKey.length > 8) {
-      try {
-        const syncRes = await fetch('http://localhost:3001/api/set-api-key', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: savedLocalKey })
-        });
-        if (syncRes.ok) {
-          setHasApiKey(true);
-          setKeyPreview(`${savedLocalKey.substring(0, 4)}...${savedLocalKey.slice(-4)}`);
-        }
-      } catch (err) {}
-    }
-  };
-
   useEffect(() => {
-    checkApiKeyStatus();
 
     socket.on('student-joined', (student) => {
       setStudents((prev) => [...prev, student]);
@@ -137,42 +95,6 @@ function TeacherDashboard() {
       }
     };
   }, []);
-
-  const handleSaveApiKey = async (e) => {
-    e?.preventDefault();
-    const key = apiKeyInput.trim();
-    if (!key) return;
-
-    setIsSavingKey(true);
-    setKeySaveSuccess('');
-
-    try {
-      const res = await fetch('http://localhost:3001/api/set-api-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: key })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        localStorage.setItem('palash_gemini_key', key);
-        setHasApiKey(true);
-        setKeyPreview(`${key.substring(0, 4)}...${key.slice(-4)}`);
-        setKeySaveSuccess('Gemini API Key saved successfully! Speech recognition is ready.');
-        setTimeout(() => {
-          setShowKeyModal(false);
-          setKeySaveSuccess('');
-          setApiKeyInput('');
-        }, 1500);
-      } else {
-        alert(data.message || 'Failed to save key');
-      }
-    } catch (err) {
-      alert('Error saving API Key: ' + err.message);
-    } finally {
-      setIsSavingKey(false);
-    }
-  };
 
   const createRoom = () => {
     socket.emit('create-room', { teacherName: 'Teacher', language: 'hi' }, (res) => {
@@ -263,13 +185,7 @@ function TeacherDashboard() {
     isActionInProgressRef.current = true;
 
     if (!isRecording) {
-      // Check if API key is configured before starting
-      if (!hasApiKey) {
-        setShowKeyModal(true);
-        setStatusMessage('Google Gemini API Key आवश्यक है। कृपया अपनी Key दर्ज करें।');
-        isActionInProgressRef.current = false;
-        return;
-      }
+
 
       try {
         setStatusMessage('');
@@ -336,12 +252,7 @@ function TeacherDashboard() {
           async (sttRes) => {
             setIsTranscribing(false);
 
-            if (sttRes?.needsApiKey) {
-              setHasApiKey(false);
-              setShowKeyModal(true);
-              setStatusMessage('Gemini API Key आवश्यक है। कृपया अपनी Key दर्ज करें।');
-              return;
-            }
+
 
             if (sttRes && sttRes.success && sttRes.hindiText) {
               const recognizedHindi = sttRes.hindiText.trim();
@@ -413,18 +324,6 @@ function TeacherDashboard() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 relative transition-colors duration-200">
         <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
-          {/* Gemini Key Config in Lobby */}
-          <button
-            onClick={() => setShowKeyModal(true)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              hasApiKey 
-                ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
-                : 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 animate-pulse'
-            }`}
-          >
-            {hasApiKey ? <ShieldCheck className="w-4 h-4 text-emerald-500" /> : <Key className="w-4 h-4 text-amber-600" />}
-            <span>{hasApiKey ? `Gemini Active (${keyPreview})` : 'Set Gemini API Key'}</span>
-          </button>
           <ThemeToggle showLabel />
         </div>
 
@@ -451,84 +350,7 @@ function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Gemini API Key Modal */}
-        {showKeyModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 max-w-md w-full rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
-              <button 
-                onClick={() => setShowKeyModal(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
 
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                  <Key className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Google Gemini API Key</h3>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">Required for high-accuracy Hindi voice recognition</p>
-                </div>
-              </div>
-
-              {keySaveSuccess && (
-                <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
-                  <span>{keySaveSuccess}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSaveApiKey} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Gemini API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={apiKeyInput}
-                    onChange={(e) => setApiKeyInput(e.target.value)}
-                    placeholder={hasApiKey ? `Key configured (${keyPreview}) - Paste new key to update` : "Paste AIzaSy... here"}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-                    required
-                  />
-                </div>
-
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 space-y-1">
-                  <p className="font-semibold text-slate-700 dark:text-slate-300">Don't have a Gemini API key?</p>
-                  <p>Get a 100% free key with no credit card required:</p>
-                  <a 
-                    href="https://aistudio.google.com/app/apikey" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline mt-1"
-                  >
-                    <span>Get Free Key from Google AI Studio</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowKeyModal(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSavingKey || !apiKeyInput.trim()}
-                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-emerald-200 dark:shadow-emerald-950/40 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isSavingKey ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                    <span>Save Key</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -550,19 +372,7 @@ function TeacherDashboard() {
           </div>
 
           <div className="flex items-center gap-4 flex-wrap">
-            {/* Gemini API Key Status Badge */}
-            <button
-              onClick={() => setShowKeyModal(true)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                hasApiKey 
-                  ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
-                  : 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 animate-pulse hover:bg-amber-100'
-              }`}
-              title="Configure Google Gemini API Key"
-            >
-              {hasApiKey ? <Sparkles className="w-3.5 h-3.5 text-emerald-500" /> : <Key className="w-3.5 h-3.5 text-amber-600" />}
-              <span>{hasApiKey ? 'Gemini AI Active' : 'Set Gemini Key'}</span>
-            </button>
+
 
             <div className="text-center">
               <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Room Code</p>
@@ -906,84 +716,7 @@ function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Gemini API Key Modal */}
-      {showKeyModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 max-w-md w-full rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
-            <button 
-              onClick={() => setShowKeyModal(false)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                <Key className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Google Gemini API Key</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Fast, spot-on Hindi speech recognition & translation</p>
-              </div>
-            </div>
-
-            {keySaveSuccess && (
-              <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
-                <span>{keySaveSuccess}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveApiKey} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Gemini API Key
-                </label>
-                <input
-                  type="password"
-                  value={apiKeyInput}
-                  onChange={(e) => setApiKeyInput(e.target.value)}
-                  placeholder={hasApiKey ? `Key configured (${keyPreview}) - Paste new key to update` : "Paste AIzaSy... here"}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-                  required
-                />
-              </div>
-
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 space-y-1">
-                <p className="font-semibold text-slate-700 dark:text-slate-300">Don't have a Gemini API key?</p>
-                <p>Get a 100% free key with no credit card required:</p>
-                <a 
-                  href="https://aistudio.google.com/app/apikey" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline mt-1"
-                >
-                  <span>Get Free Key from Google AI Studio</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowKeyModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingKey || !apiKeyInput.trim()}
-                  className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-emerald-200 dark:shadow-emerald-950/40 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isSavingKey ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                  <span>Save Key</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
