@@ -693,16 +693,6 @@ function StudentDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Test Sound Button */}
-          <button
-            onClick={() => playVernacularAudio(t.testGreetingAudio || 'जोहार', 'hi')}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-            title="Click to test mother tongue audio playback"
-          >
-            <Volume2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-            <span className={t.fontFamily}>{t.testGreeting} (Test Audio)</span>
-          </button>
-
           <ThemeToggle />
 
           <button

@@ -108,19 +108,14 @@ function normalizeTranslationPayload(raw, hindiText) {
  * @param {string} audioBase64 - Base64 encoded audio bytes
  * @param {string} mimeType - e.g. 'audio/webm' or 'audio/wav'
  */
-async function transcribeAndTranslateWithGemini(audioBase64, mimeType = 'audio/webm', sourceLang = 'hi') {
+async function transcribeAndTranslateWithGemini(audioBase64, mimeType = 'audio/webm') {
   if (!activeGeminiApiKey) {
     throw new Error('GEMINI_API_KEY is not configured. Please enter your Gemini API key in the Teacher dashboard or server/.env.');
   }
 
-  const langName = sourceLang === 'en' ? 'English' : 'Hindi';
-  const transcriptionInstruction = sourceLang === 'en' 
-    ? '1. Transcribe what was spoken into accurate English.' 
-    : '1. Transcribe what was spoken into accurate Hindi in Devanagari script.';
-
   const prompt = `You are an expert multilingual AI translator and speech transcriber for tribal primary education in Jharkhand under the PALASH program.
-Listen carefully to the audio of a teacher speaking in ${langName}.
-${transcriptionInstruction}
+Listen carefully to the audio of a teacher speaking in Hindi.
+1. Transcribe what was spoken into accurate Hindi in Devanagari script.
 2. Translate into Santhali:
    - "text": Santhali in Ol Chiki script (e.g. ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ, ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱯᱮ)
    - "phonetic": Santhali in Devanagari script so text-to-speech can speak authentic Santhali words (e.g. सागुन जोहार, पुथी झिज पे)
@@ -134,7 +129,7 @@ ${transcriptionInstruction}
 
 Respond ONLY with valid JSON in this exact structure with no markdown backticks or extra commentary:
 {
-  "hindi": "exact transcription in the spoken language (${langName})",
+  "hindi": "exact Hindi transcription in Devanagari",
   "santhali": {
     "text": "Santhali in Ol Chiki",
     "phonetic": "Santhali in Devanagari phonetics"
@@ -500,7 +495,7 @@ io.on('connection', (socket) => {
   });
 
   // 3. Multilingual Speech-to-Text & Translation (Santhali, Ho, Mundari, English)
-  socket.on('transcribe-audio', async ({ audioBase64, mimeType = 'audio/webm', sourceLang = 'hi' }, callback) => {
+  socket.on('transcribe-audio', async ({ audioBase64, mimeType = 'audio/webm' }, callback) => {
     try {
       if (!audioBase64) {
         if (callback) callback({ success: false, error: 'No audio data received' });
@@ -519,7 +514,7 @@ io.on('connection', (socket) => {
       }
 
       const t0 = Date.now();
-      const result = await transcribeAndTranslateWithGemini(audioBase64, mimeType, sourceLang);
+      const result = await transcribeAndTranslateWithGemini(audioBase64, mimeType);
       const latencyMs = Date.now() - t0;
       console.log(`[Gemini Multilingual STT in ${latencyMs}ms (${result.modelUsed})]:`, result);
 

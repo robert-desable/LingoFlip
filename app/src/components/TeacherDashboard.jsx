@@ -58,7 +58,6 @@ function TeacherDashboard() {
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [spokenLang, setSpokenLang] = useState('hi');
 
   // Transmission results (multilingual mother tongue routing)
   const [hindiTranscript, setHindiTranscript] = useState('');
@@ -101,7 +100,7 @@ function TeacherDashboard() {
   }, []);
 
   const createRoom = () => {
-    socket.emit('create-room', { teacherName: 'Teacher', language: spokenLang }, (res) => {
+    socket.emit('create-room', { teacherName: 'Teacher', language: 'hi' }, (res) => {
       if (res.success) {
         setRoomCode(res.roomCode);
       }
@@ -252,7 +251,7 @@ function TeacherDashboard() {
         // Send recorded audio to Gemini STT & Translation
         socket.emit(
           'transcribe-audio',
-          { audioBase64: audioResult.base64, mimeType: audioResult.mimeType, sourceLang: spokenLang },
+          { audioBase64: audioResult.base64, mimeType: audioResult.mimeType },
           async (sttRes) => {
             setIsTranscribing(false);
 
@@ -350,17 +349,6 @@ function TeacherDashboard() {
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Teacher Mode</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-8 transition-colors">Start a new class lobby and share the code with your students.</p>
           <div className="flex flex-col gap-3">
-            <div className="mb-2 text-left">
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">I will be speaking in:</label>
-              <select
-                value={spokenLang}
-                onChange={(e) => setSpokenLang(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-emerald-500 dark:focus:border-emerald-500 transition-colors text-slate-800 dark:text-slate-200 font-medium cursor-pointer"
-              >
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-              </select>
-            </div>
             <button 
               onClick={createRoom}
               className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white rounded-2xl text-xl font-bold transition-all shadow-lg shadow-emerald-200 dark:shadow-emerald-950/40 cursor-pointer"
@@ -392,17 +380,6 @@ function TeacherDashboard() {
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Live Class</h1>
-            </div>
-            <div className="mt-1 flex items-center gap-2">
-              <span className="text-slate-500 dark:text-slate-400 text-sm">Speaking in:</span>
-              <select
-                value={spokenLang}
-                onChange={(e) => setSpokenLang(e.target.value)}
-                className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 outline-none focus:border-emerald-500 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium cursor-pointer"
-              >
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-              </select>
             </div>
           </div>
 
