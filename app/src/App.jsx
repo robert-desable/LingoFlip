@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { Mic } from 'lucide-react';
+import { Mic, LogOut } from 'lucide-react';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import TeacherDashboard from './components/TeacherDashboard';
@@ -13,6 +13,17 @@ function RoleSelection() {
 
   return (
     <div className="min-h-screen bg-sky-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 transition-colors duration-200 relative">
+      {/* Exit App button in top-left */}
+      <div className="absolute top-6 left-6 z-10">
+        <button 
+          onClick={() => window.close()}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800/80 backdrop-blur-sm text-slate-700 dark:text-slate-300 rounded-full shadow-md hover:shadow-lg hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 transition-all border border-transparent dark:border-slate-700/50"
+        >
+          <LogOut size={18} />
+          <span className="font-semibold">Exit App</span>
+        </button>
+      </div>
+
       {/* Theme Switcher in top-right */}
       <div className="absolute top-6 right-6 z-10">
         <ThemeToggle showLabel />
