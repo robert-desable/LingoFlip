@@ -331,16 +331,16 @@ function TeacherDashboard() {
         </div>
 
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 text-center border border-transparent dark:border-slate-800 transition-colors">
-          <div className="w-40 h-40 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
             <div 
               className="w-full h-full bg-emerald-600 dark:bg-emerald-400"
               style={{
                 WebkitMaskImage: `url(${teacherLogo})`,
-                WebkitMaskSize: 'contain',
+                WebkitMaskSize: 'auto 100%',
                 WebkitMaskRepeat: 'no-repeat',
                 WebkitMaskPosition: 'center',
                 maskImage: `url(${teacherLogo})`,
-                maskSize: 'contain',
+                maskSize: 'auto 100%',
                 maskRepeat: 'no-repeat',
                 maskPosition: 'center'
               }}

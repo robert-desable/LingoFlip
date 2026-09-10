@@ -34,16 +34,16 @@ function RoleSelection() {
             onClick={() => navigate('/teacher')}
             className="flex flex-col items-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 hover:shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-transparent hover:border-emerald-500 dark:border-slate-800 dark:hover:border-emerald-500 group cursor-pointer"
           >
-            <div className="w-64 h-64 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 transition-colors">
+            <div className="w-32 h-32 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 transition-colors">
               <div 
                 className="w-full h-full bg-emerald-600 dark:bg-emerald-400"
                 style={{
                   WebkitMaskImage: `url(${teacherLogo})`,
-                  WebkitMaskSize: 'contain',
+                  WebkitMaskSize: 'auto 100%',
                   WebkitMaskRepeat: 'no-repeat',
                   WebkitMaskPosition: 'center',
                   maskImage: `url(${teacherLogo})`,
-                  maskSize: 'contain',
+                  maskSize: 'auto 100%',
                   maskRepeat: 'no-repeat',
                   maskPosition: 'center'
                 }}
@@ -58,16 +58,16 @@ function RoleSelection() {
             onClick={() => navigate('/student')}
             className="flex flex-col items-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 hover:shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-transparent hover:border-amber-500 dark:border-slate-800 dark:hover:border-amber-500 group cursor-pointer"
           >
-            <div className="w-64 h-64 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/60 transition-colors">
+            <div className="w-32 h-32 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/60 transition-colors">
               <div 
                 className="w-full h-full bg-amber-600 dark:bg-amber-400"
                 style={{
                   WebkitMaskImage: `url(${studentLogo})`,
-                  WebkitMaskSize: 'contain',
+                  WebkitMaskSize: 'auto 100%',
                   WebkitMaskRepeat: 'no-repeat',
                   WebkitMaskPosition: 'center',
                   maskImage: `url(${studentLogo})`,
-                  maskSize: 'contain',
+                  maskSize: 'auto 100%',
                   maskRepeat: 'no-repeat',
                   maskPosition: 'center'
                 }}
