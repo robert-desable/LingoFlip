@@ -1,0 +1,1097 @@
+{
+  "language": "santhali",
+  "name_native": "ᱥᱟᱱᱛᱟᱲᱤ",
+  "name_hindi": "संथाली",
+  "script": "Ol Chiki",
+  "has_native_script": true,
+  "dictionary": {
+    "नमस्ते": {
+      "native": "ᱡᱚᱦᱟᱨ",
+      "latin": "Johar",
+      "devanagari": "जोहार",
+      "category": "greeting"
+    },
+    "जोहार": {
+      "native": "ᱡᱚᱦᱟᱨ",
+      "latin": "Johar",
+      "devanagari": "जोहार",
+      "category": "greeting"
+    },
+    "धन्यवाद": {
+      "native": "ᱥᱟᱨᱦᱟᱣ",
+      "latin": "Sarhaw",
+      "devanagari": "सारहाव",
+      "category": "courtesy"
+    },
+    "हाँ": {
+      "native": "ᱦᱮᱸ",
+      "latin": "Hẽ",
+      "devanagari": "हें",
+      "category": "common"
+    },
+    "नहीं": {
+      "native": "ᱵᱟᱝ",
+      "latin": "Bang",
+      "devanagari": "बांग",
+      "category": "common"
+    },
+    "मत": {
+      "native": "ᱟᱞᱚ",
+      "latin": "Alo",
+      "devanagari": "आलो",
+      "category": "common"
+    },
+    "अच्छा": {
+      "native": "ᱵᱮᱥ",
+      "latin": "Bes",
+      "devanagari": "बेस",
+      "category": "adjective"
+    },
+    "बहुत": {
+      "native": "ᱟᱹᱰᱤ",
+      "latin": "Aḍi",
+      "devanagari": "अडी",
+      "category": "adverb"
+    },
+    "बहुत अच्छा": {
+      "native": "ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ",
+      "latin": "Aḍi napay",
+      "devanagari": "अडी नापाय",
+      "category": "praise"
+    },
+    "क्या": {
+      "native": "ᱪᱮᱫ",
+      "latin": "Chet'",
+      "devanagari": "चेद",
+      "category": "question"
+    },
+    "कौन": {
+      "native": "ᱚᱠᱚᱭ",
+      "latin": "Okoy",
+      "devanagari": "ओकोय",
+      "category": "question"
+    },
+    "कहाँ": {
+      "native": "ᱚᱠᱟᱨᱮ",
+      "latin": "Okare",
+      "devanagari": "ओकारे",
+      "category": "question"
+    },
+    "कब": {
+      "native": "ᱛᱤᱥ",
+      "latin": "Tis",
+      "devanagari": "तीस",
+      "category": "question"
+    },
+    "क्यों": {
+      "native": "ᱪᱮᱫᱟᱜ",
+      "latin": "Chedak'",
+      "devanagari": "चेदाग",
+      "category": "question"
+    },
+    "कैसे": {
+      "native": "ᱪᱮᱫ ᱞᱮᱠᱟ",
+      "latin": "Chet' leka",
+      "devanagari": "चेद लेका",
+      "category": "question"
+    },
+    "कितना": {
+      "native": "ᱛᱤᱱᱟᱹᱜ",
+      "latin": "Tinạk'",
+      "devanagari": "तीनाग",
+      "category": "question"
+    },
+    "कितने": {
+      "native": "ᱛᱤᱱᱟᱹᱜ",
+      "latin": "Tinạk'",
+      "devanagari": "तीनाग",
+      "category": "question"
+    },
+    "मैं": {
+      "native": "ᱤᱧ",
+      "latin": "Iñ",
+      "devanagari": "इञ",
+      "category": "pronoun"
+    },
+    "मुझे": {
+      "native": "ᱤᱧ",
+      "latin": "Iñ",
+      "devanagari": "इञ",
+      "category": "pronoun"
+    },
+    "मेरा": {
+      "native": "ᱤᱧᱟᱜ",
+      "latin": "Iñag",
+      "devanagari": "इञाग",
+      "category": "pronoun"
+    },
+    "मेरी": {
+      "native": "ᱤᱧᱟᱜ",
+      "latin": "Iñag",
+      "devanagari": "इञाग",
+      "category": "pronoun"
+    },
+    "मेरे": {
+      "native": "ᱤᱧᱟᱜ",
+      "latin": "Iñag",
+      "devanagari": "इञाग",
+      "category": "pronoun"
+    },
+    "तुम": {
+      "native": "ᱟᱢ",
+      "latin": "Am",
+      "devanagari": "आम",
+      "category": "pronoun"
+    },
+    "तुम्हें": {
+      "native": "ᱟᱢ",
+      "latin": "Am",
+      "devanagari": "आम",
+      "category": "pronoun"
+    },
+    "तुमको": {
+      "native": "ᱟᱢ",
+      "latin": "Am",
+      "devanagari": "आम",
+      "category": "pronoun"
+    },
+    "तुम्हारा": {
+      "native": "ᱟᱢᱟᱜ",
+      "latin": "Amak'",
+      "devanagari": "आमाग",
+      "category": "pronoun"
+    },
+    "तुम्हारी": {
+      "native": "ᱟᱢᱟᱜ",
+      "latin": "Amak'",
+      "devanagari": "आमाग",
+      "category": "pronoun"
+    },
+    "आपके": {
+      "native": "ᱟᱢᱟᱜ",
+      "latin": "Amak'",
+      "devanagari": "आमाग",
+      "category": "pronoun"
+    },
+    "आपका": {
+      "native": "ᱟᱢᱟᱜ",
+      "latin": "Amak'",
+      "devanagari": "आमाग",
+      "category": "pronoun"
+    },
+    "आप": {
+      "native": "ᱟᱯᱮ",
+      "latin": "Ape",
+      "devanagari": "आपे",
+      "category": "pronoun"
+    },
+    "हम": {
+      "native": "ᱟᱵᱚ",
+      "latin": "Abo",
+      "devanagari": "आबो",
+      "category": "pronoun"
+    },
+    "हमारा": {
+      "native": "ᱟᱵᱚᱣᱟᱜ",
+      "latin": "Abowak'",
+      "devanagari": "आबोवाग",
+      "category": "pronoun"
+    },
+    "यह": {
+      "native": "ᱱᱚᱣᱟ",
+      "latin": "Nowa",
+      "devanagari": "नोवा",
+      "category": "pronoun"
+    },
+    "वह": {
+      "native": "ᱦᱟᱱᱟ",
+      "latin": "Hana",
+      "devanagari": "हाना",
+      "category": "pronoun"
+    },
+    "ये": {
+      "native": "ᱱᱚᱣᱟᱠᱚ",
+      "latin": "Nowako",
+      "devanagari": "नोवाको",
+      "category": "pronoun"
+    },
+    "वे": {
+      "native": "ᱚᱱᱠᱚ",
+      "latin": "Onko",
+      "devanagari": "ओनको",
+      "category": "pronoun"
+    },
+    "अंक": {
+      "native": "ᱮᱞ",
+      "latin": "El",
+      "devanagari": "एल",
+      "category": "math"
+    },
+    "संख्या": {
+      "native": "ᱞᱮᱠᱷᱟ",
+      "latin": "Lekha",
+      "devanagari": "लेखा",
+      "category": "math"
+    },
+    "गिनती": {
+      "native": "ᱞᱮᱠᱷᱟ",
+      "latin": "Lekha",
+      "devanagari": "लेखा",
+      "category": "math"
+    },
+    "गिनो": {
+      "native": "ᱞᱮᱠᱷᱟᱭ ᱢᱮ",
+      "latin": "Lekhay me",
+      "devanagari": "लेखाय मे",
+      "category": "math"
+    },
+    "गिनना": {
+      "native": "ᱞᱮᱠᱷᱟ",
+      "latin": "Lekha",
+      "devanagari": "लेखा",
+      "category": "math"
+    },
+    "जोड़": {
+      "native": "ᱡᱚᱲᱟᱣ",
+      "latin": "Joṛaw",
+      "devanagari": "जोड़ाव",
+      "category": "math"
+    },
+    "घटाव": {
+      "native": "घटाव",
+      "latin": "Ghaṭaw",
+      "devanagari": "घटाव",
+      "category": "math"
+    },
+    "गुणा": {
+      "native": "ᱜᱩᱬᱟᱹ",
+      "latin": "Guṇạ",
+      "devanagari": "गुणा",
+      "category": "math"
+    },
+    "भाग": {
+      "native": "ᱦᱟᱹᱴᱤᱧ",
+      "latin": "Hạṭiñ",
+      "devanagari": "हाटिञ",
+      "category": "math"
+    },
+    "बड़ा": {
+      "native": "ᱢᱟᱨᱟᱝ",
+      "latin": "Marang",
+      "devanagari": "मारांग",
+      "category": "math"
+    },
+    "छोटा": {
+      "native": "ᱦᱩᱰᱤᱧ",
+      "latin": "Huḍiñ",
+      "devanagari": "हुडिञ",
+      "category": "math"
+    },
+    "ज्यादा": {
+      "native": "ᱰᱷᱮᱨ",
+      "latin": "Ḍher",
+      "devanagari": "ढेर",
+      "category": "math"
+    },
+    "कम": {
+      "native": "ᱠᱚᱢ",
+      "latin": "Kọm",
+      "devanagari": "कोम",
+      "category": "math"
+    },
+    "बराबर": {
+      "native": "ᱵᱟᱨᱟᱵᱟᱹᱨᱤ",
+      "latin": "Barabạri",
+      "devanagari": "बाराबारी",
+      "category": "math"
+    },
+    "आता": {
+      "native": "ᱵᱟᱰᱟᱭ",
+      "latin": "Baḍay",
+      "devanagari": "बाडाय",
+      "category": "verb"
+    },
+    "आता है": {
+      "native": "ᱵᱟᱰᱟᱭᱟ",
+      "latin": "Baḍaya",
+      "devanagari": "बाडाया",
+      "category": "verb"
+    },
+    "जानते हो": {
+      "native": "ᱵᱟᱰᱟᱭᱟᱢ",
+      "latin": "Baḍayam",
+      "devanagari": "बाडायाम",
+      "category": "verb"
+    },
+    "करना": {
+      "native": "ᱠᱟᱹᱢᱤ",
+      "latin": "Kạmi",
+      "devanagari": "कामी",
+      "category": "verb"
+    },
+    "करो": {
+      "native": "ᱠᱟᱹᱢᱤ ᱢᱮ",
+      "latin": "Kạmi me",
+      "devanagari": "कामी मे",
+      "category": "verb"
+    },
+    "कीजिए": {
+      "native": "ᱠᱟᱹᱢᱤ ᱯᱮ",
+      "latin": "Kạmi pe",
+      "devanagari": "कामी पे",
+      "category": "verb"
+    },
+    "पढ़ना": {
+      "native": "ᱯᱟᱲᱦᱟᱣ",
+      "latin": "Paṛhaw",
+      "devanagari": "पड़हाव",
+      "category": "verb"
+    },
+    "पढ़ो": {
+      "native": "ᱯᱟᱲᱦᱟᱣ ᱢᱮ",
+      "latin": "Paṛhaw me",
+      "devanagari": "पड़हाव मे",
+      "category": "verb"
+    },
+    "लिखना": {
+      "native": "ᱚᱞ",
+      "latin": "Ọl",
+      "devanagari": "ओल",
+      "category": "verb"
+    },
+    "लिखो": {
+      "native": "ᱚᱞ ᱢᱮ",
+      "latin": "Ọl me",
+      "devanagari": "ओल मे",
+      "category": "verb"
+    },
+    "सीखना": {
+      "native": "ᱪᱮᱫᱚᱜ",
+      "latin": "Chedọk'",
+      "devanagari": "चेदोक",
+      "category": "verb"
+    },
+    "सीखो": {
+      "native": "ᱪᱮᱫᱚᱜ ᱢᱮ",
+      "latin": "Chedọk' me",
+      "devanagari": "चेदोक मे",
+      "category": "verb"
+    },
+    "बोलना": {
+      "native": "ᱨᱚᱲ",
+      "latin": "Rọṛ",
+      "devanagari": "रोड़",
+      "category": "verb"
+    },
+    "बोलो": {
+      "native": "ᱨᱚᱲ ᱢᱮ",
+      "latin": "Rọṛ me",
+      "devanagari": "रोड़ मे",
+      "category": "verb"
+    },
+    "सुनना": {
+      "native": "ᱟᱸᱡᱚᱢ",
+      "latin": "Añjom",
+      "devanagari": "आंजोम",
+      "category": "verb"
+    },
+    "सुनो": {
+      "native": "ᱟᱸᱡᱚᱢ ᱢᱮ",
+      "latin": "Añjom me",
+      "devanagari": "आंजोम मे",
+      "category": "verb"
+    },
+    "देखना": {
+      "native": "ᱧᱮᱞ",
+      "latin": "Ñel",
+      "devanagari": "ञेल",
+      "category": "verb"
+    },
+    "देखो": {
+      "native": "ᱧᱮᱞ ᱢᱮ",
+      "latin": "Ñel me",
+      "devanagari": "ञेल मे",
+      "category": "verb"
+    },
+    "समझना": {
+      "native": "ᱵᱩᱡᱷᱟᱹᱣ",
+      "latin": "Bujhạw",
+      "devanagari": "बुझाव",
+      "category": "verb"
+    },
+    "समझो": {
+      "native": "ᱵᱩᱡᱷᱟᱹᱣ ᱢᱮ",
+      "latin": "Bujhạw me",
+      "devanagari": "बुझाव मे",
+      "category": "verb"
+    },
+    "खेलना": {
+      "native": "ᱮᱱᱮᱡ",
+      "latin": "Enej",
+      "devanagari": "एनेज",
+      "category": "verb"
+    },
+    "खेलो": {
+      "native": "ᱮᱱᱮᱡ ᱢᱮ",
+      "latin": "Enej me",
+      "devanagari": "एनेज मे",
+      "category": "verb"
+    },
+    "हंसना": {
+      "native": "ᱞᱟᱸᱫᱟ",
+      "latin": "Landa",
+      "devanagari": "लांदा",
+      "category": "verb"
+    },
+    "रोना": {
+      "native": "ᱨᱟᱜ",
+      "latin": "Rak'",
+      "devanagari": "राग",
+      "category": "verb"
+    },
+    "आना": {
+      "native": "ᱦᱤᱡᱩᱜ",
+      "latin": "Hijuk'",
+      "devanagari": "हिजुग",
+      "category": "verb"
+    },
+    "आओ": {
+      "native": "ᱦᱤᱡᱩᱜ ᱢᱮ",
+      "latin": "Hijuk' me",
+      "devanagari": "हिजुग मे",
+      "category": "verb"
+    },
+    "आइए": {
+      "native": "ᱦᱤᱡᱩᱜ ᱯᱮ",
+      "latin": "Hijuk' pe",
+      "devanagari": "हिजुग पे",
+      "category": "verb"
+    },
+    "जाना": {
+      "native": "ᱥᱮᱱᱚᱜ",
+      "latin": "Senọk'",
+      "devanagari": "सेनोक",
+      "category": "verb"
+    },
+    "जाओ": {
+      "native": "ᱥᱮᱱᱚᱜ ᱢᱮ",
+      "latin": "Senọk' me",
+      "devanagari": "सेनोक मे",
+      "category": "verb"
+    },
+    "बैठना": {
+      "native": "ᱫᱩᱲᱩᱵ",
+      "latin": "Duṛup'",
+      "devanagari": "दुड़ुब",
+      "category": "verb"
+    },
+    "बैठो": {
+      "native": "ᱫᱩᱲᱩᱵ ᱢᱮ",
+      "latin": "Duṛup' me",
+      "devanagari": "दुड़ुब मे",
+      "category": "verb"
+    },
+    "बैठ जाओ": {
+      "native": "ᱫᱩᱲᱩᱵ ᱢᱮ",
+      "latin": "Duṛup' me",
+      "devanagari": "दुड़ुब मे",
+      "category": "verb"
+    },
+    "खड़े हो": {
+      "native": "ᱛᱤᱸᱜᱩᱱ ᱢᱮ",
+      "latin": "Tingun me",
+      "devanagari": "तिंगुन मे",
+      "category": "verb"
+    },
+    "खड़े हो जाओ": {
+      "native": "ᱛᱤᱸᱜᱩᱱ ᱢᱮ",
+      "latin": "Tingun me",
+      "devanagari": "तिंगुन मे",
+      "category": "verb"
+    },
+    "देना": {
+      "native": "ᱮᱢ",
+      "latin": "Em",
+      "devanagari": "एम",
+      "category": "verb"
+    },
+    "दो": {
+      "native": "ᱵᱟᱨ",
+      "latin": "Bar",
+      "devanagari": "बार",
+      "category": "number"
+    },
+    "लेना": {
+      "native": "ᱦᱟᱛᱟᱣ",
+      "latin": "Hataw",
+      "devanagari": "हाताव",
+      "category": "verb"
+    },
+    "लो": {
+      "native": "ᱦᱟᱛᱟᱣ ᱢᱮ",
+      "latin": "Hataw me",
+      "devanagari": "हाताव मे",
+      "category": "verb"
+    },
+    "पीना": {
+      "native": "ᱧᱩ",
+      "latin": "Ñu",
+      "devanagari": "ञु",
+      "category": "verb"
+    },
+    "खाओ": {
+      "native": "ᱡᱚᱢ ᱢᱮ",
+      "latin": "Jọm me",
+      "devanagari": "जोम मे",
+      "category": "verb"
+    },
+    "पियो": {
+      "native": "ᱧᱩᱭ ᱢᱮ",
+      "latin": "Ñuy me",
+      "devanagari": "ञुय मे",
+      "category": "verb"
+    },
+    "बच्चा": {
+      "native": "ᱜᱤᱫᱽᱨᱟᱹ",
+      "latin": "Gidrạ",
+      "devanagari": "गिद्राः",
+      "category": "noun"
+    },
+    "बच्चे": {
+      "native": "ᱜᱤᱫᱽᱨᱟᱹᱠᱚ",
+      "latin": "Gidrạko",
+      "devanagari": "गिद्राःको",
+      "category": "noun_plural"
+    },
+    "बच्चों": {
+      "native": "ᱜᱤᱫᱽᱨᱟᱹᱠᱚ",
+      "latin": "Gidrạko",
+      "devanagari": "गिद्राःको",
+      "category": "noun_plural"
+    },
+    "लड़का": {
+      "native": "ᱠᱚᱲᱟ",
+      "latin": "Kọṛa",
+      "devanagari": "कोड़ा",
+      "category": "noun"
+    },
+    "लड़की": {
+      "native": "ᱠᱩᱲᱤ",
+      "latin": "Kuṛi",
+      "devanagari": "कुड़ी",
+      "category": "noun"
+    },
+    "दोस्त": {
+      "native": "ᱜᱟᱛᱮ",
+      "latin": "Gate",
+      "devanagari": "गाते",
+      "category": "noun"
+    },
+    "मित्र": {
+      "native": "ᱜᱟᱛᱮ",
+      "latin": "Gate",
+      "devanagari": "गाते",
+      "category": "noun"
+    },
+    "माता": {
+      "native": "ᱟᱭᱳ",
+      "latin": "Ayọ",
+      "devanagari": "आयो",
+      "category": "family"
+    },
+    "माँ": {
+      "native": "ᱟᱭᱳ",
+      "latin": "Ayọ",
+      "devanagari": "आयो",
+      "category": "family"
+    },
+    "पिता": {
+      "native": "ᱵᱟᱵᱟ",
+      "latin": "Baba",
+      "devanagari": "बाबा",
+      "category": "family"
+    },
+    "भाई": {
+      "native": "ᱵᱚᱭᱦᱟ",
+      "latin": "Bọyha",
+      "devanagari": "बोयहा",
+      "category": "family"
+    },
+    "बहन": {
+      "native": "ᱢᱤᱥᱮᱨᱟ",
+      "latin": "Misera",
+      "devanagari": "मिसेरा",
+      "category": "family"
+    },
+    "घर": {
+      "native": "ᱚᱲᱟᱜ",
+      "latin": "Ọṛak'",
+      "devanagari": "ओड़ाग",
+      "category": "noun"
+    },
+    "गाँव": {
+      "native": "ᱟᱹᱛᱩ",
+      "latin": "Atu",
+      "devanagari": "आतु",
+      "category": "noun"
+    },
+    "स्कूल": {
+      "native": "ᱟᱥᱲᱟ",
+      "latin": "Asṛa",
+      "devanagari": "आसड़ा",
+      "category": "noun"
+    },
+    "कक्षा": {
+      "native": "ᱠᱞᱟᱥ",
+      "latin": "Klas",
+      "devanagari": "क्लास",
+      "category": "noun"
+    },
+    "पाठ": {
+      "native": "ᱯᱟᱴᱷ",
+      "latin": "Paṭh",
+      "devanagari": "पाठ",
+      "category": "noun"
+    },
+    "किताब": {
+      "native": "ᱯᱚᱛᱚᱵ",
+      "latin": "Potob",
+      "devanagari": "पोतोब",
+      "category": "noun"
+    },
+    "कलम": {
+      "native": "ᱠᱚᱞᱚᱢ",
+      "latin": "Kọlọm",
+      "devanagari": "कोलोम",
+      "category": "noun"
+    },
+    "कापी": {
+      "native": "ᱠᱷᱟᱛᱟ",
+      "latin": "Khata",
+      "devanagari": "खाता",
+      "category": "noun"
+    },
+    "पेंसिल": {
+      "native": "ᱯᱮᱱᱥᱤᱞ",
+      "latin": "Pensil",
+      "devanagari": "पेंसिल",
+      "category": "noun"
+    },
+    "पानी": {
+      "native": "ᱫᱟᱜ",
+      "latin": "Dak'",
+      "devanagari": "दाग",
+      "category": "noun"
+    },
+    "खाना": {
+      "native": "ᱫᱟᱠᱟ",
+      "latin": "Daka",
+      "devanagari": "दाका",
+      "category": "noun"
+    },
+    "फल": {
+      "native": "ᱡᱚ",
+      "latin": "Jọ",
+      "devanagari": "जो",
+      "category": "noun"
+    },
+    "पेड़": {
+      "native": "ᱫᱟᱨᱮ",
+      "latin": "Dare",
+      "devanagari": "दारे",
+      "category": "noun"
+    },
+    "फूल": {
+      "native": "ᱵᱟᱦᱟ",
+      "latin": "Baha",
+      "devanagari": "बाहा",
+      "category": "noun"
+    },
+    "पत्ता": {
+      "native": "ᱥᱟᱠᱟᱢ",
+      "latin": "Sakam",
+      "devanagari": "साकाम",
+      "category": "noun"
+    },
+    "पत्ते": {
+      "native": "ᱥᱟᱠᱟᱢᱠᱚ",
+      "latin": "Sakamko",
+      "devanagari": "साकामको",
+      "category": "noun_plural"
+    },
+    "चिड़िया": {
+      "native": "ᱪᱮᱬᱮ",
+      "latin": "Cheṇe",
+      "devanagari": "चेणे",
+      "category": "noun"
+    },
+    "गाय": {
+      "native": "ᱜᱟᱹᱭ",
+      "latin": "Gạï",
+      "devanagari": "गई",
+      "category": "noun"
+    },
+    "बैल": {
+      "native": "ᱰᱟᱝᱜᱽᱨᱟ",
+      "latin": "Ḍangra",
+      "devanagari": "डांगरा",
+      "category": "noun"
+    },
+    "बकरी": {
+      "native": "ᱢᱮᱨᱚᱢ",
+      "latin": "Merọm",
+      "devanagari": "मेरोम",
+      "category": "noun"
+    },
+    "कुत्ता": {
+      "native": "ᱥᱮᱛᱟ",
+      "latin": "Seta",
+      "devanagari": "सेता",
+      "category": "noun"
+    },
+    "बिल्ली": {
+      "native": "ᱯᱩᱥᱤ",
+      "latin": "Pusi",
+      "devanagari": "पुसी",
+      "category": "noun"
+    },
+    "हाथी": {
+      "native": "ᱦᱟᱹᱛᱤ",
+      "latin": "Hạti",
+      "devanagari": "हाती",
+      "category": "noun"
+    },
+    "शेर": {
+      "native": "ᱛᱟᱹᱨᱩᱵ",
+      "latin": "Tạrup'",
+      "devanagari": "तारुब",
+      "category": "noun"
+    },
+    "हाथ": {
+      "native": "ᱛᱤ",
+      "latin": "Ti",
+      "devanagari": "ती",
+      "category": "body"
+    },
+    "आँख": {
+      "native": "ᱢᱮᱫ",
+      "latin": "Mẽt'",
+      "devanagari": "मेद",
+      "category": "body"
+    },
+    "आंख": {
+      "native": "ᱢᱮᱫ",
+      "latin": "Mẽt'",
+      "devanagari": "मेद",
+      "category": "body"
+    },
+    "कान": {
+      "native": "ᱞᱩᱛᱩᱨ",
+      "latin": "Lutur",
+      "devanagari": "लुंतुर",
+      "category": "body"
+    },
+    "पैर": {
+      "native": "ᱡᱟᱝᱜᱟ",
+      "latin": "Janga",
+      "devanagari": "जांगा",
+      "category": "body"
+    },
+    "मुँह": {
+      "native": "ᱢᱚᱪᱟ",
+      "latin": "Mọcha",
+      "devanagari": "मोचा",
+      "category": "body"
+    },
+    "सिर": {
+      "native": "ᱵᱚᱦᱚᱜ",
+      "latin": "Bọhọk'",
+      "devanagari": "बोहोक",
+      "category": "body"
+    },
+    "नाक": {
+      "native": "ᱢᱩᱸ",
+      "latin": "Mũ",
+      "devanagari": "मुं",
+      "category": "body"
+    },
+    "दांत": {
+      "native": "ᱰᱟᱴᱟ",
+      "latin": "Data",
+      "devanagari": "डाटा",
+      "category": "body"
+    },
+    "नाम": {
+      "native": "ᱧᱩᱛᱩᱢ",
+      "latin": "Ñutum",
+      "devanagari": "ञुतुम",
+      "category": "noun"
+    },
+    "और": {
+      "native": "ᱟᱨ",
+      "latin": "Ar",
+      "devanagari": "आर",
+      "category": "conjunction"
+    },
+    "यहाँ": {
+      "native": "ᱱᱚᱰᱮ",
+      "latin": "Nọḍe",
+      "devanagari": "नोडे",
+      "category": "adverb"
+    },
+    "वहाँ": {
+      "native": "ᱦᱟᱸᱰᱮ",
+      "latin": "Hande",
+      "devanagari": "हांडे",
+      "category": "adverb"
+    },
+    "आज": {
+      "native": "ᱛᱮᱦᱮᱧ",
+      "latin": "Teheñ",
+      "devanagari": "तेहेञ",
+      "category": "time"
+    },
+    "कल": {
+      "native": "ᱜᱟᱯᱟ",
+      "latin": "Gapa",
+      "devanagari": "गापा",
+      "category": "time"
+    },
+    "दिन": {
+      "native": "ᱢᱟᱦᱟ",
+      "latin": "Maha",
+      "devanagari": "माहा",
+      "category": "time"
+    },
+    "रात": {
+      "native": "ᱧᱤᱫᱟᱹ",
+      "latin": "Ñindạ",
+      "devanagari": "ञिंदा",
+      "category": "time"
+    },
+    "है": {
+      "native": "ᱠᱟᱱᱟ",
+      "latin": "Kana",
+      "devanagari": "काना",
+      "category": "auxiliary"
+    },
+    "हैं": {
+      "native": "ᱠᱟᱱᱟᱠᱚ",
+      "latin": "Kanako",
+      "devanagari": "कानाको",
+      "category": "auxiliary"
+    },
+    "था": {
+      "native": "ᱛᱟᱦᱮᱸᱠᱟᱱᱟ",
+      "latin": "Tahẽkana",
+      "devanagari": "ताहेनकाना",
+      "category": "auxiliary"
+    },
+    "एक": {
+      "native": "ᱢᱤᱫ",
+      "latin": "Mit'",
+      "devanagari": "मिद",
+      "category": "number"
+    },
+    "तीन": {
+      "native": "ᱯᱮ",
+      "latin": "Pe",
+      "devanagari": "पे",
+      "category": "number"
+    },
+    "चार": {
+      "native": "ᱯᱩᱱ",
+      "latin": "Pun",
+      "devanagari": "पून",
+      "category": "number"
+    },
+    "पाँच": {
+      "native": "ᱢᱚᱬᱮ",
+      "latin": "Mọṇe",
+      "devanagari": "मोणे",
+      "category": "number"
+    },
+    "पांच": {
+      "native": "ᱢᱚᱬᱮ",
+      "latin": "Mọṇe",
+      "devanagari": "मोणे",
+      "category": "number"
+    },
+    "छह": {
+      "native": "ᱛᱩᱨᱩᱭ",
+      "latin": "Turuy",
+      "devanagari": "तुरुय",
+      "category": "number"
+    },
+    "सात": {
+      "native": "ᱮᱭᱟᱭ",
+      "latin": "Eyay",
+      "devanagari": "एयाय",
+      "category": "number"
+    },
+    "आठ": {
+      "native": "ᱤᱨᱟᱹᱞ",
+      "latin": "Irạl",
+      "devanagari": "इरल",
+      "category": "number"
+    },
+    "नौ": {
+      "native": "ᱟᱨᱮ",
+      "latin": "Are",
+      "devanagari": "आरे",
+      "category": "number"
+    },
+    "दस": {
+      "native": "ᱜᱮᱞ",
+      "latin": "Gel",
+      "devanagari": "गेल",
+      "category": "number"
+    }
+  },
+  "phrases": [
+    {
+      "hindi": "क्या तुम्हें अंक करना आता है?",
+      "native": "ᱪᱮᱫ ᱟᱢ ᱮᱞ ᱠᱟᱹᱢᱤᱢ ᱵᱟᱰᱟᱭᱟ?",
+      "latin": "Chet' am el kạmim baḍaya?",
+      "devanagari": "चेद आम एल कामीम बाडाया?",
+      "meaning": "Do you know how to do numbers/math?",
+      "pedagogy_tag": "math_fluency"
+    },
+    {
+      "hindi": "क्या तुम्हें अंक करना आता है",
+      "native": "ᱪᱮᱫ ᱟᱢ ᱮᱞ ᱠᱟᱹᱢᱤᱢ ᱵᱟᱰᱟᱭᱟ?",
+      "latin": "Chet' am el kạmim baḍaya?",
+      "devanagari": "चेद आम एल कामीम बाडाया?",
+      "meaning": "Do you know how to do numbers/math?",
+      "pedagogy_tag": "math_fluency"
+    },
+    {
+      "hindi": "क्या आपको गिनती आती है?",
+      "native": "ᱪᱮᱫ ᱟᱢ ᱞᱮᱠᱷᱟᱢ ᱵᱟᱰᱟᱭᱟ?",
+      "latin": "Chet' am lekham baḍaya?",
+      "devanagari": "चेद आम लेखाम बाडाया?",
+      "meaning": "Do you know counting?",
+      "pedagogy_tag": "math_fluency"
+    },
+    {
+      "hindi": "गिनती करो।",
+      "native": "ᱞᱮᱠᱷᱟᱭ ᱢᱮ᱾",
+      "latin": "Lekhay me.",
+      "devanagari": "लेखाय मे।",
+      "meaning": "Count.",
+      "pedagogy_tag": "math_instruction"
+    },
+    {
+      "hindi": "आप कैसे हैं?",
+      "native": "ᱟᱢ ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+      "latin": "Am chet' leka menama?",
+      "devanagari": "आम चेद लेका मेनामा?",
+      "meaning": "How are you?",
+      "pedagogy_tag": "greeting"
+    },
+    {
+      "hindi": "तुम कैसे हो?",
+      "native": "ᱟᱢ ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+      "latin": "Am chet' leka menama?",
+      "devanagari": "आम चेद लेका मेनामा?",
+      "meaning": "How are you?",
+      "pedagogy_tag": "greeting"
+    },
+    {
+      "hindi": "नमस्ते बच्चों!",
+      "native": "ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹᱠᱚ!",
+      "latin": "Johar gidrạko!",
+      "devanagari": "जोहार गिद्राःको!",
+      "meaning": "Welcome children!",
+      "pedagogy_tag": "classroom_opening"
+    },
+    {
+      "hindi": "आपका नाम क्या है?",
+      "native": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ?",
+      "latin": "Amak' ñutum do chet'?",
+      "devanagari": "आमाग् ञुतुम दो चेद्?",
+      "meaning": "What is your name?",
+      "pedagogy_tag": "icebreaker"
+    },
+    {
+      "hindi": "मेरा नाम ... है।",
+      "native": "ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ... ᱠᱟᱱᱟ᱾",
+      "latin": "Iñak' ñutum do ... kana.",
+      "devanagari": "इञाग् ञुतुम दो ... काना।",
+      "meaning": "My name is ...",
+      "pedagogy_tag": "self_introduction"
+    },
+    {
+      "hindi": "सभी बच्चे अपनी किताबें निकालें।",
+      "native": "ᱡᱚᱛᱚ ᱜᱤᱫᱽᱨᱟᱹ ᱟᱯᱱᱟᱨ ᱯᱚᱛᱚᱵ ᱩᱰᱩᱠ ᱯᱮ᱾",
+      "latin": "Joto gidrạ apnar potob uḍuk pe.",
+      "devanagari": "जोतो गिद्राः आपनार पोतोब उडुक पे।",
+      "meaning": "All children take out your books.",
+      "pedagogy_tag": "instruction"
+    },
+    {
+      "hindi": "किताब खोलो और पृष्ठ 10 देखो।",
+      "native": "ᱯᱚᱛᱚᱵ ᱡᱷᱤᱡᱽ ᱯᱮ ᱟᱨ ᱥᱟᱦᱴᱟ ᱑᱐ ᱧᱮᱞ ᱯᱮ᱾",
+      "latin": "Potob jhij pe ar sahta 10 ñel pe.",
+      "devanagari": "पोतोब झिज पे आर साहटा १० ञेल पे।",
+      "meaning": "Open book and look at page 10.",
+      "pedagogy_tag": "instruction"
+    },
+    {
+      "hindi": "यहाँ आओ।",
+      "native": "ᱱᱚᱰᱮ ᱦᱤᱡᱩᱜ ᱢᱮ᱾",
+      "latin": "Nọḍe hijuk' me.",
+      "devanagari": "नोडे हिजुग् मे।",
+      "meaning": "Come here.",
+      "pedagogy_tag": "command"
+    },
+    {
+      "hindi": "यहाँ बैठ जाओ।",
+      "native": "ᱱᱚᱰᱮ ᱫᱩᱲᱩᱵ ᱢᱮ᱾",
+      "latin": "Nọḍe duṛup' me.",
+      "devanagari": "नोडे दुड़ुब मे।",
+      "meaning": "Sit down here.",
+      "pedagogy_tag": "command"
+    },
+    {
+      "hindi": "शांत रहो और सुनो।",
+      "native": "ᱛᱷᱤᱨ ᱛᱟᱦᱮᱸᱱ ᱯᱮ ᱟᱨ ᱟᱸᱡᱚᱢ ᱯᱮ᱾",
+      "latin": "Thir tahẽn pe ar añjom pe.",
+      "devanagari": "थीर ताहेन पे आर आंजोम पे।",
+      "meaning": "Stay quiet and listen.",
+      "pedagogy_tag": "classroom_management"
+    },
+    {
+      "hindi": "ताली बजाओ!",
+      "native": "ᱛᱟᱞᱤ ᱠᱷᱩᱵ ᱮᱢ ᱢᱮ!",
+      "latin": "Tali khub em me!",
+      "devanagari": "ताली खुब एम मे!",
+      "meaning": "Clap your hands!",
+      "pedagogy_tag": "activity"
+    },
+    {
+      "hindi": "क्या आपको समझ आया?",
+      "native": "ᱪᱮᱫ ᱟᱢ ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟ?",
+      "latin": "Chet' am bujhạw keda?",
+      "devanagari": "चेद आम बुझाव केदा?",
+      "meaning": "Did you understand?",
+      "pedagogy_tag": "check_understanding"
+    },
+    {
+      "hindi": "मुझे पानी पीना है।",
+      "native": "ᱤᱧ ᱫᱟᱜ ᱧᱩ ᱥᱟᱱᱟᱭᱮᱫᱤᱧᱟ᱾",
+      "latin": "Iñ dak' ñu sanayedin-a.",
+      "devanagari": "इञ दाग ञु सानायेदिञा।",
+      "meaning": "I want to drink water (Student voice).",
+      "pedagogy_tag": "student_need"
+    },
+    {
+      "hindi": "शौचालय जाना है।",
+      "native": "ᱤᱧ ᱯᱟᱭᱠᱷᱟᱱᱟ ᱥᱮᱱᱚᱜ ᱥᱟᱱᱟᱭᱮᱫᱤᱧᱟ᱾",
+      "latin": "Iñ paykhana senọk' sanayedin-a.",
+      "devanagari": "इञ पायखाना सेनोक सानायेदिञा।",
+      "meaning": "I need to go to washroom (Student voice).",
+      "pedagogy_tag": "student_need"
+    }
+  ]
+}

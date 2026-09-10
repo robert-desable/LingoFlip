@@ -290,6 +290,17 @@ function StudentDashboard() {
   // Audio Player References
   const currentAudioRef = useRef(null);
   const activeUtteranceRef = useRef(null);
+  const roomCodeRef = useRef(roomCode);
+  const stepRef = useRef(step);
+  const doubtTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    roomCodeRef.current = roomCode;
+  }, [roomCode]);
+
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
 
   // Prime voices when component mounts
   useEffect(() => {
@@ -457,6 +468,16 @@ function StudentDashboard() {
       }
     });
 
+    socket.on('doubt-resolved', (data) => {
+      if (!data?.studentId || data.studentId === socket.id) {
+        if (doubtTimeoutRef.current) {
+          clearTimeout(doubtTimeoutRef.current);
+          doubtTimeoutRef.current = null;
+        }
+        setIsDoubtRaised(false);
+      }
+    });
+
     socket.on('teacher-disconnected', () => {
       alert(t.teacherEndedAlert);
       if (currentAudioRef.current) {
@@ -465,6 +486,10 @@ function StudentDashboard() {
       }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
+      }
+      if (doubtTimeoutRef.current) {
+        clearTimeout(doubtTimeoutRef.current);
+        doubtTimeoutRef.current = null;
       }
       setCurrentVernacular('');
       setCurrentPhonetic('');
@@ -478,6 +503,14 @@ function StudentDashboard() {
     return () => {
       socket.off('receive-transcript');
       socket.off('teacher-disconnected');
+      socket.off('doubt-resolved');
+      if (doubtTimeoutRef.current) {
+        clearTimeout(doubtTimeoutRef.current);
+        doubtTimeoutRef.current = null;
+      }
+      if (stepRef.current === 'class' && roomCodeRef.current) {
+        socket.emit('leave-room', { roomCode: roomCodeRef.current });
+      }
       if (currentAudioRef.current) {
         try { currentAudioRef.current.pause(); } catch (e) {}
         currentAudioRef.current = null;
@@ -502,9 +535,28 @@ function StudentDashboard() {
   };
 
   const raiseDoubt = () => {
-    if (isDoubtRaised) return;
+    if (isDoubtRaised) {
+      // Toggle to cancel doubt / lower hand
+      setIsDoubtRaised(false);
+      if (doubtTimeoutRef.current) {
+        clearTimeout(doubtTimeoutRef.current);
+        doubtTimeoutRef.current = null;
+      }
+      socket.emit('cancel-doubt', { roomCode });
+      return;
+    }
+
     setIsDoubtRaised(true);
     socket.emit('raise-doubt', { roomCode });
+
+    // Auto-reset hand after 12 seconds so student can easily raise hand again
+    if (doubtTimeoutRef.current) {
+      clearTimeout(doubtTimeoutRef.current);
+    }
+    doubtTimeoutRef.current = setTimeout(() => {
+      setIsDoubtRaised(false);
+      doubtTimeoutRef.current = null;
+    }, 12000);
   };
 
   if (step === 'join') {
@@ -703,6 +755,9 @@ function StudentDashboard() {
                 if ('speechSynthesis' in window) {
                   window.speechSynthesis.cancel();
                 }
+                if (roomCode) {
+                  socket.emit('leave-room', { roomCode });
+                }
                 setStep('join');
                 setCurrentVernacular('');
                 setCurrentPhonetic('');
@@ -864,10 +919,10 @@ function StudentDashboard() {
       <div className="shrink-0">
         <button 
           onClick={raiseDoubt}
-          disabled={isDoubtRaised}
+          title={isDoubtRaised ? "Tap to lower hand / cancel question" : "Tap to raise hand and ask a question"}
           className={`w-full py-8 md:py-10 rounded-3xl shadow-xl flex items-center justify-center gap-5 transition-all duration-300 border-4 cursor-pointer select-none ${
             isDoubtRaised 
-              ? 'bg-amber-100 dark:bg-amber-950/70 border-amber-400 dark:border-amber-600 text-amber-800 dark:text-amber-200 scale-[0.99]' 
+              ? 'bg-amber-100 dark:bg-amber-950/70 border-amber-400 dark:border-amber-600 text-amber-800 dark:text-amber-200 scale-[0.99] hover:bg-amber-200 dark:hover:bg-amber-900/60' 
               : 'bg-rose-500 hover:bg-rose-600 hover:scale-[1.02] border-transparent text-white shadow-rose-200 dark:shadow-rose-950/60'
           }`}
         >
@@ -883,6 +938,9 @@ function StudentDashboard() {
                 </span>
                 <span className={`text-sm font-bold opacity-80 block mt-0.5 ${t.fontFamily}`}>
                   {t.doubtWait} • {t.doubtWaitHindi} ({t.doubtWaitEnglish})
+                </span>
+                <span className="text-xs font-semibold opacity-70 block mt-1 text-amber-700 dark:text-amber-300">
+                  (हाथ नीचे करने के लिए टैप करें • Tap to lower hand)
                 </span>
               </div>
             </div>
