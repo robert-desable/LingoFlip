@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { Hand, Volume2, UserCheck, AlertTriangle, ArrowLeft, LogOut, RotateCcw, Zap, Sparkles, VolumeX } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import studentLogo from '../assets/student-logo.png';
 
 const socket = io('http://localhost:3001');
 
@@ -513,8 +514,10 @@ function StudentDashboard() {
           
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-sky-100 dark:bg-sky-950/60 rounded-2xl flex items-center justify-center text-sky-600 dark:text-sky-400 font-black text-xl">
-                🎒
+              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/60 rounded-2xl flex items-center justify-center transition-colors">
+                <div className="w-8 h-8 bg-amber-600 dark:bg-amber-400 mix-blend-multiply relative overflow-hidden">
+                  <img src={studentLogo} alt="Student Logo" className="absolute inset-0 w-full h-full object-contain mix-blend-screen bg-white" />
+                </div>
               </div>
               <div>
                 <h1 className={`text-2xl font-black text-slate-800 dark:text-slate-100 ${t.fontFamily}`}>
