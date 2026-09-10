@@ -36,7 +36,7 @@ function RoleSelection() {
           >
             <div className="w-32 h-32 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 transition-colors">
               <div 
-                className="w-16 h-16 bg-emerald-600 dark:bg-emerald-400"
+                className="w-full h-full bg-emerald-600 dark:bg-emerald-400"
                 style={{
                   WebkitMaskImage: `url(${teacherLogo})`,
                   WebkitMaskSize: 'contain',
@@ -60,7 +60,7 @@ function RoleSelection() {
           >
             <div className="w-32 h-32 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/60 transition-colors">
               <div 
-                className="w-16 h-16 bg-amber-600 dark:bg-amber-400"
+                className="w-full h-full bg-amber-600 dark:bg-amber-400"
                 style={{
                   WebkitMaskImage: `url(${studentLogo})`,
                   WebkitMaskSize: 'contain',
