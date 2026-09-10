@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { Hand, Volume2, UserCheck, AlertTriangle, ArrowLeft, LogOut, RotateCcw, Zap, Sparkles, VolumeX } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import studentLogo from '../assets/student-logo.png';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const socket = io(BACKEND_URL);
@@ -566,8 +567,20 @@ function StudentDashboard() {
           
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-sky-100 dark:bg-sky-950/60 rounded-2xl flex items-center justify-center text-sky-600 dark:text-sky-400 font-black text-xl">
-                🎒
+              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center transition-colors">
+                <div 
+                  className="w-full h-full bg-amber-600 dark:bg-amber-400"
+                  style={{
+                    WebkitMaskImage: `url(${studentLogo})`,
+                    WebkitMaskSize: 'auto 100%',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskImage: `url(${studentLogo})`,
+                    maskSize: 'auto 100%',
+                    maskRepeat: 'no-repeat',
+                    maskPosition: 'center'
+                  }}
+                />
               </div>
               <div>
                 <h1 className={`text-2xl font-black text-slate-800 dark:text-slate-100 ${t.fontFamily}`}>
@@ -733,16 +746,6 @@ function StudentDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Test Sound Button */}
-          <button
-            onClick={() => playVernacularAudio(t.testGreetingAudio || 'जोहार', 'hi')}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-            title="Click to test mother tongue audio playback"
-          >
-            <Volume2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-            <span className={t.fontFamily}>{t.testGreeting} (Test Audio)</span>
-          </button>
-
           <ThemeToggle />
 
           <button

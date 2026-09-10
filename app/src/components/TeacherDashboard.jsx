@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import {
-  Users,
-  Mic,
-  Square,
-  Hand,
-  AlertCircle,
-  PhoneOff,
-  ArrowLeft,
-  Send,
-  Sparkles,
-  Volume2,
-  Zap,
+import { 
+  Users, 
+  Mic, 
+  Square, 
+  Hand, 
+  AlertCircle, 
+  PhoneOff, 
+  Settings, 
+  LogOut, 
+  ArrowLeft, 
+  Send, 
+  Sparkles, 
+  Volume2, 
+  Zap, 
   CheckCircle2,
   Radio,
   Loader2,
@@ -25,6 +27,7 @@ import {
 import { translateHindiToAll } from '../services/translator';
 import { startRecording, stopRecording } from '../services/audioRecorder';
 import ThemeToggle from './ThemeToggle';
+import teacherLogo from '../assets/teacher-logo.png';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const socket = io(BACKEND_URL);
@@ -385,7 +388,19 @@ function TeacherDashboard() {
 
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl dark:shadow-slate-950/60 p-8 text-center border border-transparent dark:border-slate-800 transition-colors">
           <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
-            <Users className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+            <div 
+              className="w-full h-full bg-emerald-600 dark:bg-emerald-400"
+              style={{
+                WebkitMaskImage: `url(${teacherLogo})`,
+                WebkitMaskSize: 'auto 100%',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: `url(${teacherLogo})`,
+                maskSize: 'auto 100%',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center'
+              }}
+            />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Teacher Mode</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-8 transition-colors">Start a new class lobby and share the code with your students.</p>
@@ -422,9 +437,6 @@ function TeacherDashboard() {
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Live Class</h1>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 transition-colors">
-              Speaking in Hindi (hi-IN) • Real-time Mother Tongue Translation via Bhashini AI
-            </p>
           </div>
 
           <div className="flex items-center gap-4 flex-wrap">
@@ -479,8 +491,8 @@ function TeacherDashboard() {
                 : isTranscribing
                   ? 'bg-amber-500 opacity-80 cursor-wait'
                   : 'bg-emerald-500 hover:bg-emerald-600 ring-8 ring-emerald-50 dark:ring-emerald-950/50 hover:scale-105 active:scale-95'
-              }`}
-            title={isRecording ? 'Click to stop and translate your voice' : 'Click to start speaking in Hindi'}
+            }`}
+            title={isRecording ? 'Click to stop and translate your voice' : 'Click to start speaking'}
           >
             {isTranscribing ? (
               <Loader2 className="w-16 h-16 text-white animate-spin" />
