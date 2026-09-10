@@ -5,6 +5,12 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const {
+  olChikiToDevanagari,
+  translateHindiToTribal,
+  buildMultilingualOutput,
+  CLASSROOM_PHRASE_BANK
+} = require('./tribalEngine');
 
 const app = express();
 app.use(cors());
@@ -19,14 +25,11 @@ const io = new Server(server, {
   maxHttpBufferSize: 1e8 // 100 MB buffer for audio payloads
 });
 
-// Active Gemini API Key (loaded from .env or configured dynamically)
-let activeGeminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+// Active Bhashini API & Inference Credentials (loaded from .env with default fallback)
+let activeBhashiniApiKey = process.env.BHASHINI_API_KEY || '38b9ba42b8-476b-45c7-a124-168ccaca79f5';
+let activeBhashiniInferenceKey = process.env.BHASHINI_INFERENCE_KEY || '0J8g7cdRdENu6mribzqO6QNO6TdW3tYYtb897CleY2Bni76UFpQTruuPdCntmGsO';
 
-if (activeGeminiApiKey) {
-  console.log('[Gemini Engine] Loaded Gemini API Key from environment/env.');
-} else {
-  console.log('[Gemini Engine] No Gemini API Key found. Set it in server/.env or via the Teacher Dashboard.');
-}
+console.log('[Bhashini Engine] Active Bhashini API and Inference credentials loaded.');
 
 /**
  * High-accuracy offline translations for standard classroom phrases
@@ -104,237 +107,194 @@ function normalizeTranslationPayload(raw, hindiText) {
 }
 
 /**
- * Transcribes Hindi audio and simultaneously translates to Santhali, Ho, Mundari & English
- * @param {string} audioBase64 - Base64 encoded audio bytes
- * @param {string} mimeType - e.g. 'audio/webm' or 'audio/wav'
+ * Executes a pipeline request to Bhashini Dhruva inference endpoint
  */
-async function transcribeAndTranslateWithGemini(audioBase64, mimeType = 'audio/webm') {
-  if (!activeGeminiApiKey) {
-    throw new Error('GEMINI_API_KEY is not configured. Please enter your Gemini API key in the Teacher dashboard or server/.env.');
+async function callBhashiniPipeline(pipelineTasks, inputData) {
+  const url = 'https://dhruva-api.bhashini.gov.in/services/inference/pipeline';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': activeBhashiniInferenceKey
+    },
+    body: JSON.stringify({
+      pipelineTasks,
+      inputData
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Bhashini API error (${res.status}): ${errText}`);
   }
 
-  const prompt = `You are an expert multilingual AI translator and speech transcriber for tribal primary education in Jharkhand under the PALASH program.
-Listen carefully to the audio of a teacher speaking in Hindi.
-1. Transcribe what was spoken into accurate Hindi in Devanagari script.
-2. Translate into Santhali:
-   - "text": Santhali in Ol Chiki script (e.g. ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ, ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱯᱮ)
-   - "phonetic": Santhali in Devanagari script so text-to-speech can speak authentic Santhali words (e.g. सागुन जोहार, पुथी झिज पे)
-3. Translate into Ho:
-   - "text": Ho in Warang Chiti or Devanagari (e.g. 𑢹𑣉𑣉 ᱡᱚᱦᱟᱨ or जोहार गिदराको)
-   - "phonetic": Ho in Devanagari phonetic script so text-to-speech can speak authentic Ho words (e.g. जोहार गिदराको, पुथी ओलोपे)
-4. Translate into Mundari:
-   - "text": Mundari in Devanagari script (e.g. जोहार होनको, पुथी उगुइपे)
-   - "phonetic": Mundari in Devanagari script so text-to-speech can speak authentic Mundari words (e.g. जोहार होनको, पुथी उगुइपे)
-5. Translate into English for classroom subtitles.
-
-Respond ONLY with valid JSON in this exact structure with no markdown backticks or extra commentary:
-{
-  "hindi": "exact Hindi transcription in Devanagari",
-  "santhali": {
-    "text": "Santhali in Ol Chiki",
-    "phonetic": "Santhali in Devanagari phonetics"
-  },
-  "ho": {
-    "text": "Ho in Warang Chiti or Devanagari",
-    "phonetic": "Ho in Devanagari phonetics"
-  },
-  "mundari": {
-    "text": "Mundari in Devanagari",
-    "phonetic": "Mundari in Devanagari phonetics"
-  },
-  "english": "English translation"
-}`;
-
-  const cleanMime = mimeType.split(';')[0].trim() || 'audio/webm';
-
-  const requestBody = {
-    contents: [
-      {
-        parts: [
-          {
-            inlineData: {
-              mimeType: cleanMime,
-              data: audioBase64
-            }
-          },
-          {
-            text: prompt
-          }
-        ]
-      }
-    ],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.1
-    }
-  };
-
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash', 'gemini-2.0-flash'];
-  let lastError = null;
-
-  for (const model of modelsToTry) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(activeGeminiApiKey)}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        console.warn(`[Gemini API] Model ${model} returned HTTP ${res.status}:`, errText);
-        lastError = new Error(`Gemini ${model} failed (${res.status}): ${errText}`);
-        continue;
-      }
-
-      const json = await res.json();
-      const candidate = json.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!candidate) {
-        throw new Error('Gemini returned an empty candidate part');
-      }
-
-      const cleaned = candidate.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-      const parsed = JSON.parse(cleaned);
-      const normalized = normalizeTranslationPayload(parsed, '');
-
-      return {
-        ...normalized,
-        modelUsed: model
-      };
-    } catch (err) {
-      console.warn(`[Gemini STT] Error with ${model}:`, err.message);
-      lastError = err;
-    }
-  }
-
-  throw lastError || new Error('Failed to transcribe audio with Gemini');
+  return await res.json();
 }
 
 /**
- * Translates arbitrary Hindi text into Santhali, Ho, Mundari, and English using Gemini or offline cache
+ * Transcribes Hindi audio using Bhashini ASR and translates to English & Santhali (Bhashini NMT) + Ho & Mundari
+ * @param {string} audioBase64 - Base64 encoded audio bytes (16kHz WAV)
+ * @param {string} mimeType - e.g. 'audio/wav'
  */
-async function translateTextWithGemini(hindiText) {
+async function transcribeAndTranslateWithBhashini(audioBase64, mimeType = 'audio/wav') {
+  if (!audioBase64) {
+    throw new Error('No audio data received');
+  }
+
+  // 1. Joint ASR (Hindi) + NMT (English) pipeline call
+  const jointRes = await callBhashiniPipeline(
+    [
+      {
+        taskType: 'asr',
+        config: {
+          language: { sourceLanguage: 'hi' }
+        }
+      },
+      {
+        taskType: 'translation',
+        config: {
+          language: { sourceLanguage: 'hi', targetLanguage: 'en' }
+        }
+      }
+    ],
+    {
+      audio: [
+        { audioContent: audioBase64 }
+      ]
+    }
+  );
+
+  const pipeline = jointRes?.pipelineResponse || [];
+  const asrTask = pipeline.find(t => t.taskType === 'asr');
+  const transTask = pipeline.find(t => t.taskType === 'translation');
+
+  const recognizedHindi = asrTask?.output?.[0]?.source?.trim() || '';
+  const englishTrans = transTask?.output?.[0]?.target?.trim() || '';
+
+  if (!recognizedHindi) {
+    throw new Error('No speech recognized in audio');
+  }
+
+  // 2. Check offline classroom phrase bank first (0ms instantaneous lookup)
+  if (CLASSROOM_PHRASE_BANK[recognizedHindi]) {
+    const offline = CLASSROOM_PHRASE_BANK[recognizedHindi];
+    return {
+      hindi: recognizedHindi,
+      english: englishTrans || offline.english,
+      santhali: offline.santhali,
+      ho: offline.ho,
+      mundari: offline.mundari,
+      modelUsed: 'Bhashini Dhruva ASR + Tribal Engine'
+    };
+  }
+
+  // 3. For Santhali, query Bhashini NMT for Ol Chiki translation
+  let santhaliOlChiki = '';
+  try {
+    const satRes = await callBhashiniPipeline(
+      [
+        {
+          taskType: 'translation',
+          config: {
+            language: { sourceLanguage: 'hi', targetLanguage: 'sat' }
+          }
+        }
+      ],
+      {
+        input: [
+          { source: recognizedHindi }
+        ]
+      }
+    );
+    santhaliOlChiki = satRes?.pipelineResponse?.[0]?.output?.[0]?.target?.trim() || '';
+  } catch (satErr) {
+    console.warn('[Bhashini NMT] Santhali translation note:', satErr.message);
+  }
+
+  // 4. Build comprehensive mother tongue output (Santhali phonetics, Ho, Mundari, English)
+  const multilingual = buildMultilingualOutput(recognizedHindi, santhaliOlChiki, englishTrans);
+
+  return {
+    ...multilingual,
+    modelUsed: 'Bhashini Dhruva ASR + NMT & Tribal Engine'
+  };
+}
+
+/**
+ * Translates arbitrary Hindi text into Santhali, Ho, Mundari, and English using Bhashini NMT and tribal dictionary
+ */
+async function translateTextWithBhashini(hindiText) {
   const trimmed = (hindiText || '').trim();
   if (!trimmed) return null;
 
   // 1. Direct match in offline classroom phrase dictionary
-  if (OFFLINE_TRANSLATIONS[trimmed]) {
-    const offline = OFFLINE_TRANSLATIONS[trimmed];
+  if (CLASSROOM_PHRASE_BANK[trimmed]) {
+    const offline = CLASSROOM_PHRASE_BANK[trimmed];
     return {
       hindi: trimmed,
+      english: offline.english,
       santhali: offline.santhali,
       ho: offline.ho,
       mundari: offline.mundari,
-      english: offline.english,
       source: 'offline-cache'
     };
   }
 
-  // 2. Query Gemini if API key is active
-  if (activeGeminiApiKey) {
-    const prompt = `Translate this teacher's classroom Hindi sentence into tribal languages of Jharkhand:
-Hindi: "${trimmed}"
+  // 2. Query Bhashini NMT for English and Santhali
+  let englishTrans = '';
+  let santhaliTrans = '';
 
-1. Santhali:
-   - "text": Ol Chiki script
-   - "phonetic": Devanagari script for speech pronunciation
-2. Ho:
-   - "text": Warang Chiti or Devanagari
-   - "phonetic": Devanagari script for speech pronunciation
-3. Mundari:
-   - "text": Devanagari script
-   - "phonetic": Devanagari script for speech pronunciation
-4. English: English translation
+  try {
+    const [enRes, satRes] = await Promise.allSettled([
+      callBhashiniPipeline(
+        [{ taskType: 'translation', config: { language: { sourceLanguage: 'hi', targetLanguage: 'en' } } }],
+        { input: [{ source: trimmed }] }
+      ),
+      callBhashiniPipeline(
+        [{ taskType: 'translation', config: { language: { sourceLanguage: 'hi', targetLanguage: 'sat' } } }],
+        { input: [{ source: trimmed }] }
+      )
+    ]);
 
-Respond in strict JSON:
-{
-  "hindi": "${trimmed}",
-  "santhali": { "text": "...", "phonetic": "..." },
-  "ho": { "text": "...", "phonetic": "..." },
-  "mundari": { "text": "...", "phonetic": "..." },
-  "english": "..."
-}`;
-
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash'];
-    for (const model of modelsToTry) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(activeGeminiApiKey)}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: 'application/json', temperature: 0.1 }
-          })
-        });
-
-        if (res.ok) {
-          const json = await res.json();
-          const candidate = json.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (candidate) {
-            const parsed = JSON.parse(candidate.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim());
-            return {
-              ...normalizeTranslationPayload(parsed, trimmed),
-              source: `gemini-${model}`
-            };
-          }
-        }
-      } catch (e) {
-        console.warn(`[Text Translation] Error with ${model}:`, e.message);
-      }
+    if (enRes.status === 'fulfilled') {
+      englishTrans = enRes.value?.pipelineResponse?.[0]?.output?.[0]?.target?.trim() || '';
     }
+    if (satRes.status === 'fulfilled') {
+      santhaliTrans = satRes.value?.pipelineResponse?.[0]?.output?.[0]?.target?.trim() || '';
+    }
+  } catch (err) {
+    console.warn('[Bhashini Translation] Error:', err.message);
   }
 
-  // 3. Fallback: return reasonable phonetics based on input
+  // 3. Build comprehensive mother tongue output (Santhali phonetics, Ho, Mundari, English)
+  const multilingual = buildMultilingualOutput(trimmed, santhaliTrans, englishTrans);
+
   return {
-    hindi: trimmed,
-    santhali: { text: trimmed, phonetic: trimmed },
-    ho: { text: trimmed, phonetic: trimmed },
-    mundari: { text: trimmed, phonetic: trimmed },
-    english: trimmed,
-    source: 'fallback'
+    ...multilingual,
+    source: 'bhashini-nmt'
   };
 }
 
 // ------------------- REST API Endpoints -------------------
 
-// Check current Gemini API key status
+// Check current Bhashini API key status
 app.get('/api/key-status', (req, res) => {
-  const hasKey = Boolean(activeGeminiApiKey && activeGeminiApiKey.trim().length > 10);
-  const preview = hasKey
-    ? `${activeGeminiApiKey.substring(0, 4)}...${activeGeminiApiKey.slice(-4)}`
-    : '';
-  return res.json({ success: true, hasKey, preview });
+  return res.json({ success: true, hasKey: true, preview: 'Bhashini Active' });
 });
 
-// Update Gemini API key dynamically & persist to server/.env
+// Update Bhashini API keys dynamically & persist to server/.env
 app.post('/api/set-api-key', (req, res) => {
   try {
-    const { apiKey } = req.body;
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 8) {
-      return res.status(400).json({ success: false, message: 'Invalid API Key' });
-    }
-
-    activeGeminiApiKey = apiKey.trim();
-    process.env.GEMINI_API_KEY = activeGeminiApiKey;
+    const { apiKey, inferenceKey } = req.body;
+    if (apiKey) activeBhashiniApiKey = apiKey.trim();
+    if (inferenceKey) activeBhashiniInferenceKey = inferenceKey.trim();
 
     const envPath = path.join(__dirname, '.env');
-    let envContent = '';
-    if (fs.existsSync(envPath)) {
-      envContent = fs.readFileSync(envPath, 'utf8');
-      if (envContent.includes('GEMINI_API_KEY=')) {
-        envContent = envContent.replace(/GEMINI_API_KEY=.*/g, `GEMINI_API_KEY=${activeGeminiApiKey}`);
-      } else {
-        envContent += `\nGEMINI_API_KEY=${activeGeminiApiKey}\n`;
-      }
-    } else {
-      envContent = `GEMINI_API_KEY=${activeGeminiApiKey}\nPORT=3001\n`;
-    }
+    const envContent = `# Bhashini (National Language Translation Mission / ULCA / Dhruva) API Keys\nBHASHINI_API_KEY=${activeBhashiniApiKey}\nBHASHINI_INFERENCE_KEY=${activeBhashiniInferenceKey}\nPORT=3001\n`;
     fs.writeFileSync(envPath, envContent, 'utf8');
 
-    console.log('[Gemini Engine] API Key successfully updated and saved to server/.env');
-    return res.json({ success: true, message: 'Gemini API Key saved successfully' });
+    console.log('[Bhashini Engine] API keys updated in server/.env');
+    return res.json({ success: true, message: 'Bhashini credentials saved successfully' });
   } catch (err) {
     console.error('[Set API Key Error]', err);
     return res.status(500).json({ success: false, message: err.message });
@@ -348,7 +308,7 @@ app.post('/api/translate-text', async (req, res) => {
     if (!text) {
       return res.status(400).json({ success: false, error: 'No text provided' });
     }
-    const result = await translateTextWithGemini(text);
+    const result = await translateTextWithBhashini(text);
     return res.json({ success: true, data: result });
   } catch (err) {
     console.error('[Translate Text Error]', err);
@@ -359,19 +319,12 @@ app.post('/api/translate-text', async (req, res) => {
 // HTTP endpoint for audio transcription & translation
 app.post('/api/transcribe-audio', async (req, res) => {
   try {
-    const { audioBase64, mimeType = 'audio/webm' } = req.body;
+    const { audioBase64, mimeType = 'audio/wav' } = req.body;
     if (!audioBase64) {
       return res.status(400).json({ success: false, error: 'No audio data received' });
     }
-    if (!activeGeminiApiKey) {
-      return res.status(400).json({
-        success: false,
-        needsApiKey: true,
-        error: 'Gemini API Key is not set. Please configure it in the Teacher Dashboard.'
-      });
-    }
 
-    const result = await transcribeAndTranslateWithGemini(audioBase64, mimeType);
+    const result = await transcribeAndTranslateWithBhashini(audioBase64, mimeType);
     return res.json({
       success: true,
       data: result
@@ -472,6 +425,12 @@ io.on('connection', (socket) => {
 
     const room = rooms.get(roomCode);
     
+    // Deduplicate: remove if this socket or matching student already exists in room
+    const existingIndex = room.students.findIndex(s => s.id === socket.id || (s.name === studentName && s.motherTongue === motherTongue));
+    if (existingIndex !== -1) {
+      room.students.splice(existingIndex, 1);
+    }
+
     const newStudent = {
       id: socket.id,
       name: studentName,
@@ -483,8 +442,9 @@ io.on('connection', (socket) => {
     
     console.log(`[Room] Student ${studentName} (${motherTongue}) joined ${roomCode}`);
 
-    // Notify teacher
+    // Notify teacher of the joined student AND broadcast synchronized active student list
     io.to(room.teacherId).emit('student-joined', newStudent);
+    io.to(room.teacherId).emit('update-students', room.students);
 
     if (callback) {
       callback({ 
@@ -492,6 +452,22 @@ io.on('connection', (socket) => {
         roomDetails: { teacherName: room.teacherName, students: room.students } 
       });
     }
+  });
+
+  // 2b. Student leaves a lobby explicitly
+  socket.on('leave-room', ({ roomCode }) => {
+    rooms.forEach((room, rCode) => {
+      if (roomCode && rCode !== roomCode) return;
+      const studentIndex = room.students.findIndex(s => s.id === socket.id);
+      if (studentIndex !== -1) {
+        const [removedStudent] = room.students.splice(studentIndex, 1);
+        socket.leave(rCode);
+        console.log(`[Room] Student ${removedStudent.name} (${removedStudent.motherTongue}) explicitly left ${rCode}`);
+
+        io.to(room.teacherId).emit('student-left', removedStudent);
+        io.to(room.teacherId).emit('update-students', room.students);
+      }
+    });
   });
 
   // 3. Multilingual Speech-to-Text & Translation (Santhali, Ho, Mundari, English)
@@ -502,21 +478,10 @@ io.on('connection', (socket) => {
         return;
       }
 
-      if (!activeGeminiApiKey) {
-        if (callback) {
-          callback({
-            success: false,
-            needsApiKey: true,
-            error: 'Gemini API Key is not set. Please click "Set Gemini API Key" in the top bar.'
-          });
-        }
-        return;
-      }
-
       const t0 = Date.now();
-      const result = await transcribeAndTranslateWithGemini(audioBase64, mimeType);
+      const result = await transcribeAndTranslateWithBhashini(audioBase64, mimeType);
       const latencyMs = Date.now() - t0;
-      console.log(`[Gemini Multilingual STT in ${latencyMs}ms (${result.modelUsed})]:`, result);
+      console.log(`[Bhashini Multilingual STT in ${latencyMs}ms (${result.modelUsed})]:`, result);
 
       if (callback) {
         callback({
@@ -532,7 +497,7 @@ io.on('connection', (socket) => {
         });
       }
     } catch (err) {
-      console.error('[Gemini STT Socket Error]', err.message);
+      console.error('[Bhashini STT Socket Error]', err.message);
       if (callback) {
         callback({
           success: false,
@@ -591,6 +556,24 @@ io.on('connection', (socket) => {
     });
   });
 
+  // 5b. Teacher marks a student's doubt resolved -> notify student to clear button state
+  socket.on('resolve-doubt', ({ roomCode, studentId }) => {
+    if (!rooms.has(roomCode)) return;
+    console.log(`[Interrupt] Doubt resolved by teacher for student ${studentId || 'all'} in room ${roomCode}`);
+    if (studentId) {
+      io.to(studentId).emit('doubt-resolved', { studentId });
+    }
+    io.to(roomCode).emit('doubt-resolved', { studentId });
+  });
+
+  // 5c. Student cancels doubt / lowers hand voluntarily
+  socket.on('cancel-doubt', ({ roomCode }) => {
+    if (!rooms.has(roomCode)) return;
+    const room = rooms.get(roomCode);
+    console.log(`[Interrupt] Doubt cancelled by student ${socket.id} in room ${roomCode}`);
+    io.to(room.teacherId).emit('doubt-cancelled', { studentId: socket.id });
+  });
+
   // 6. Teacher explicitly ends the live class
   socket.on('end-room', ({ roomCode }, callback) => {
     if (!rooms.has(roomCode)) {
@@ -621,9 +604,10 @@ io.on('connection', (socket) => {
       } else {
         const studentIndex = room.students.findIndex(s => s.id === socket.id);
         if (studentIndex !== -1) {
-          const student = room.students[studentIndex];
-          room.students.splice(studentIndex, 1);
-          io.to(room.teacherId).emit('student-left', student);
+          const [removedStudent] = room.students.splice(studentIndex, 1);
+          console.log(`[Room] Student ${removedStudent.name} disconnected from ${roomCode}`);
+          io.to(room.teacherId).emit('student-left', removedStudent);
+          io.to(room.teacherId).emit('update-students', room.students);
         }
       }
     });

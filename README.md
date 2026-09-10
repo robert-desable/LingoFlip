@@ -15,4 +15,5 @@ A classroom app to translate Hindi to tribal mother tongues like Santali, Ho and
 
 ### APP BEHAVIOUR
 - Students microphone enabled to speak when a doubt /hand "raised" to add a doubt to the teacher's notification as. This doubt must be translated from the student's mother tongue to Hindi and English.
-
+- Fix - when doubt's are resolved, the doubt button is not reset to normal on the student client.
+- Fix - for Teacher's "mobile" client, when app is tabbed out, screen turns off, the student app quits the classroom.

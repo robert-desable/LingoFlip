@@ -55,6 +55,101 @@ export function blobToBase64(blob) {
 }
 
 /**
+ * Converts an audio Blob into 16kHz Mono 16-bit PCM WAV Base64 (Standard for Bhashini Dhruva ASR)
+ * @param {Blob} blob
+ * @returns {Promise<string>}
+ */
+export async function convertBlobTo16kWavBase64(blob) {
+  try {
+    const arrayBuffer = await blob.arrayBuffer();
+    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtxClass) {
+      return await blobToBase64(blob);
+    }
+
+    const tempCtx = new AudioCtxClass();
+    let decoded = null;
+    try {
+      decoded = await tempCtx.decodeAudioData(arrayBuffer);
+    } finally {
+      try { await tempCtx.close(); } catch (e) {}
+    }
+
+    if (!decoded) {
+      return await blobToBase64(blob);
+    }
+
+    // High-fidelity resample to 16,000 Hz Mono using native OfflineAudioContext
+    const targetSampleRate = 16000;
+    const targetLength = Math.max(1, Math.ceil(decoded.duration * targetSampleRate));
+    const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+      1,
+      targetLength,
+      targetSampleRate
+    );
+
+    const bufferSource = offlineCtx.createBufferSource();
+    bufferSource.buffer = decoded;
+    bufferSource.connect(offlineCtx.destination);
+    bufferSource.start(0);
+
+    const renderedBuffer = await offlineCtx.startRendering();
+    const pcmData = renderedBuffer.getChannelData(0);
+
+    // Encode to 16-bit PCM RIFF WAV
+    const bitsPerSample = 16;
+    const bytesPerSample = bitsPerSample / 8;
+    const dataSize = pcmData.length * bytesPerSample;
+    const wavBuffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(wavBuffer);
+
+    const writeStr = (v, off, str) => {
+      for (let i = 0; i < str.length; i++) {
+        v.setUint8(off + i, str.charCodeAt(i));
+      }
+    };
+
+    // RIFF identifier
+    writeStr(view, 0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeStr(view, 8, 'WAVE');
+    // fmt chunk
+    writeStr(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM
+    view.setUint16(22, 1, true); // Mono (1 channel)
+    view.setUint32(24, targetSampleRate, true);
+    view.setUint32(28, targetSampleRate * 1 * bytesPerSample, true);
+    view.setUint16(32, 1 * bytesPerSample, true);
+    view.setUint16(34, bitsPerSample, true);
+    // data chunk
+    writeStr(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // Write 16-bit PCM samples
+    let offset = 44;
+    for (let i = 0; i < pcmData.length; i++) {
+      const s = Math.max(-1, Math.min(1, pcmData[i]));
+      const sample = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      view.setInt16(offset, Math.round(sample), true);
+      offset += 2;
+    }
+
+    // Convert ArrayBuffer to Base64
+    let binary = '';
+    const bytes = new Uint8Array(wavBuffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  } catch (err) {
+    console.warn('[AudioRecorder] WAV conversion fallback to raw blob:', err);
+    return await blobToBase64(blob);
+  }
+}
+
+/**
  * Starts microphone recording with live audio level visualization callback
  * @param {Object} options
  * @param {function(number): void} [options.onAudioLevel] - Callback with normalized volume 0-100
@@ -177,11 +272,11 @@ export function stopRecording() {
           return;
         }
 
-        const base64 = await blobToBase64(audioBlob);
+        const base64Wav = await convertBlobTo16kWavBase64(audioBlob);
         resolve({
           blob: audioBlob,
-          base64,
-          mimeType,
+          base64: base64Wav,
+          mimeType: 'audio/wav',
           durationSec: parseFloat(elapsedSec.toFixed(2))
         });
       } catch (err) {

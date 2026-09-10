@@ -74,57 +74,40 @@ function TeacherDashboard() {
 
 
 
-  // Fetch initial API key status and sync with localStorage
-  const checkApiKeyStatus = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/key-status`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.hasKey) {
-          setHasApiKey(true);
-          setKeyPreview(data.preview || '');
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('Could not check server API key status:', e);
-    }
 
-    // Check local storage fallback
-    const savedLocalKey = localStorage.getItem('palash_gemini_key');
-    if (savedLocalKey && savedLocalKey.length > 8) {
-      try {
-        const syncRes = await fetch(`${BACKEND_URL}/api/set-api-key`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: savedLocalKey })
-        });
-        if (syncRes.ok) {
-          setHasApiKey(true);
-          setKeyPreview(`${savedLocalKey.substring(0, 4)}...${savedLocalKey.slice(-4)}`);
-        }
-      } catch (err) { }
-    }
-  };
 
   useEffect(() => {
-
     socket.on('student-joined', (student) => {
-      setStudents((prev) => [...prev, student]);
+      setStudents((prev) => {
+        const filtered = prev.filter((s) => s.id !== student.id);
+        return [...filtered, student];
+      });
     });
 
     socket.on('student-left', (student) => {
-      setStudents((prev) => prev.filter((s) => s.id !== student.id));
+      setStudents((prev) => prev.filter((s) => s.id !== student.id && s.name !== student.name));
+    });
+
+    socket.on('update-students', (updatedList) => {
+      if (Array.isArray(updatedList)) {
+        setStudents(updatedList);
+      }
     });
 
     socket.on('student-doubt', (data) => {
       setDoubts((prev) => [...prev, data]);
     });
 
+    socket.on('doubt-cancelled', ({ studentId }) => {
+      setDoubts((prev) => prev.filter((d) => d.student?.id !== studentId));
+    });
+
     return () => {
       socket.off('student-joined');
       socket.off('student-left');
+      socket.off('update-students');
       socket.off('student-doubt');
+      socket.off('doubt-cancelled');
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -335,7 +318,7 @@ function TeacherDashboard() {
               const munTrans = sttRes.mundari;
               const elapsedMs = sttRes.latencyMs || (Date.now() - captureStartTime);
 
-              console.log('[Gemini STT Multilingual Output]:', {
+              console.log('[Bhashini STT Multilingual Output]:', {
                 hindi: recognizedHindi,
                 santhali: satTrans,
                 ho: hoTrans,
@@ -347,7 +330,7 @@ function TeacherDashboard() {
               setStatusMessage('');
 
               if (satTrans || hoTrans || munTrans || englishTrans) {
-                // Direct joint transcription + multi-target mother tongue translation from Gemini!
+                // Direct joint transcription + multi-target mother tongue translation from Bhashini!
                 setEnglishTranslation(englishTrans);
                 setSanthaliTranslation(satTrans);
                 setHoTranslation(hoTrans);
@@ -440,7 +423,7 @@ function TeacherDashboard() {
               <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Live Class</h1>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 transition-colors">
-              Speaking in Hindi (hi-IN) • Real-time English translation via Gemini AI
+              Speaking in Hindi (hi-IN) • Real-time Mother Tongue Translation via Bhashini AI
             </p>
           </div>
 
@@ -478,7 +461,7 @@ function TeacherDashboard() {
               </span>
             ) : isTranscribing ? (
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold text-xs uppercase tracking-wider animate-pulse">
-                <Loader2 className="w-4 h-4 animate-spin" /> Gemini Recognizing Hindi & Translating...
+                <Loader2 className="w-4 h-4 animate-spin" /> Bhashini AI Recognizing Hindi & Translating...
               </span>
             ) : (
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
@@ -529,14 +512,14 @@ function TeacherDashboard() {
             {isRecording
               ? `बोल रहे हैं... (${recordingSeconds}s)`
               : isTranscribing
-                ? 'Gemini आवाज़ पहचान रहा है...'
+                ? 'Bhashini AI आवाज़ पहचान रहा है...'
                 : 'Tap to Speak in Hindi'}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-center max-w-md text-sm transition-colors">
             {isRecording
               ? 'अपना वाक्य हिंदी में बोलें, फिर अनुवाद करने के लिए दोबारा बटन दबाएं।'
               : isTranscribing
-                ? 'कृपया प्रतीक्षा करें, Google Gemini द्वारा हिंदी भाषण को संथाली, हो, मुण्डारी और अंग्रेजी में बदला जा रहा है...'
+                ? 'कृपया प्रतीक्षा करें, Bhashini AI द्वारा हिंदी भाषण को संथाली, हो, मुण्डारी और अंग्रेजी में बदला जा रहा है...'
                 : 'माइक बटन दबाएं और हिंदी में बोलें। छात्र इसे तुरंत अपनी-अपनी मातृभाषा में सुनेंगे।'}
           </p>
 
@@ -554,7 +537,7 @@ function TeacherDashboard() {
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  Latest Voice Transmission (Multilingual Mother Tongue Routing)
+                  Latest Voice Transmission (Bhashini AI Multilingual Pipeline)
                 </span>
                 {latency !== null && (
                   <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
@@ -750,7 +733,14 @@ function TeacherDashboard() {
                     )}
                   </div>
                   <button
-                    onClick={() => setDoubts(doubts.filter((_, i) => i !== idx))}
+                    onClick={() => {
+                      if (doubt.student?.id) {
+                        socket.emit('resolve-doubt', { roomCode, studentId: doubt.student.id });
+                      } else {
+                        socket.emit('resolve-doubt', { roomCode });
+                      }
+                      setDoubts(doubts.filter((_, i) => i !== idx));
+                    }}
                     className="w-full mt-3 py-2 bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 font-bold rounded-xl hover:bg-rose-100 dark:hover:bg-slate-800 border border-transparent dark:border-rose-900/40 transition-colors cursor-pointer"
                   >
                     Mark Resolved
