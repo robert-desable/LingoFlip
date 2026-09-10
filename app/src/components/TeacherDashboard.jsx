@@ -74,10 +74,14 @@ function TeacherDashboard() {
   const timerRef = useRef(null);
   const startTimeRef = useRef(0);
   const isActionInProgressRef = useRef(false);
+  
+  // Continuous Speech Recognition
+  const recognitionRef = useRef(null);
+  const isRecordingRef = useRef(false);
 
-
-
-
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
 
   useEffect(() => {
     socket.on('student-joined', (student) => {
@@ -114,6 +118,9 @@ function TeacherDashboard() {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
       }
     };
   }, []);
@@ -170,7 +177,11 @@ function TeacherDashboard() {
     if (!confirmEnd) return;
 
     if (isRecording) {
-      await stopRecording();
+      isRecordingRef.current = false;
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
       setIsRecording(false);
       setAudioLevel(0);
       if (timerRef.current) {
@@ -237,16 +248,21 @@ function TeacherDashboard() {
   };
 
   /**
-   * Starts or stops live microphone recording with precise wall-clock timer & Gemini STT
+   * Starts or stops live continuous microphone recording with SpeechRecognition
    */
   const toggleRecording = async () => {
     if (isActionInProgressRef.current) return;
     isActionInProgressRef.current = true;
 
     if (!isRecording) {
-
-
       try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setStatusMessage('आपके ब्राउज़र में स्पीच रिकग्निशन उपलब्ध नहीं है। (Speech recognition not available)');
+          isActionInProgressRef.current = false;
+          return;
+        }
+
         setStatusMessage('');
         setRecordingSeconds(0);
         startTimeRef.current = Date.now();
@@ -256,119 +272,72 @@ function TeacherDashboard() {
           timerRef.current = null;
         }
 
-        // Start native MediaRecorder with volume meter
-        await startRecording({
-          onAudioLevel: (level) => {
-            setAudioLevel(level);
-          }
-        });
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'hi-IN';
 
-        setIsRecording(true);
+        recognition.onstart = () => {
+          setIsRecording(true);
+          
+          timerRef.current = setInterval(() => {
+            if (startTimeRef.current > 0) {
+              const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+              setRecordingSeconds(elapsed);
+              setAudioLevel(20 + Math.random() * 60); // Simulate audio level for visualizer
+            }
+          }, 150);
+        };
 
-        // Precise wall-clock elapsed timer
-        timerRef.current = setInterval(() => {
-          if (startTimeRef.current > 0) {
-            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-            setRecordingSeconds(elapsed);
+        recognition.onresult = (event) => {
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              const transcript = event.results[i][0].transcript;
+              handleProcessHindiSpeech(transcript, Date.now());
+            }
           }
-        }, 150);
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          if (event.error !== 'no-speech') {
+            setStatusMessage(`माइक समस्या: ${event.error}`);
+          }
+        };
+
+        recognition.onend = () => {
+          // Restart if still in recording state (continuous listening)
+          if (isRecordingRef.current) {
+            try {
+              recognition.start();
+            } catch(e) {}
+          }
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+        
       } catch (err) {
-        console.error('Failed to access microphone:', err);
-        setStatusMessage('माइक चालू नहीं हो सका। कृपया माइक्रोफ़ोन की अनुमति दें। (Could not access microphone.)');
+        console.error('Failed to start speech recognition:', err);
+        setStatusMessage('माइक चालू नहीं हो सका। कृपया माइक्रोफ़ोन की अनुमति दें।');
         setIsRecording(false);
       } finally {
         isActionInProgressRef.current = false;
       }
     } else {
-      // Teacher stopped speaking -> finalize recording
+      // Stop continuous recognition
+      isRecordingRef.current = false;
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
       setIsRecording(false);
       setAudioLevel(0);
-      setIsTranscribing(true);
-
-      const captureStartTime = Date.now();
-
-      try {
-        const audioResult = await stopRecording();
-
-        if (!audioResult || !audioResult.base64) {
-          setIsTranscribing(false);
-          setStatusMessage('रिकॉर्डिंग बहुत छोटी थी। कृपया बटन दबाकर पूरा वाक्य बोलें। (Recording was too short.)');
-          setTimeout(() => setStatusMessage(''), 4000);
-          isActionInProgressRef.current = false;
-          return;
-        }
-
-        console.log(`[Audio Captured]: ${audioResult.durationSec}s, ${audioResult.mimeType}, base64 len: ${audioResult.base64.length}`);
-
-        // Send recorded audio to Gemini STT & Translation
-        socket.emit(
-          'transcribe-audio',
-          { audioBase64: audioResult.base64, mimeType: audioResult.mimeType },
-          async (sttRes) => {
-            setIsTranscribing(false);
-
-
-
-            if (sttRes && sttRes.success && sttRes.hindiText) {
-              const recognizedHindi = sttRes.hindiText.trim();
-              const englishTrans = (sttRes.englishText || '').trim();
-              const satTrans = sttRes.santhali;
-              const hoTrans = sttRes.ho;
-              const munTrans = sttRes.mundari;
-              const elapsedMs = sttRes.latencyMs || (Date.now() - captureStartTime);
-
-              console.log('[Bhashini STT Multilingual Output]:', {
-                hindi: recognizedHindi,
-                santhali: satTrans,
-                ho: hoTrans,
-                mundari: munTrans,
-                english: englishTrans
-              });
-
-              setHindiTranscript(recognizedHindi);
-              setStatusMessage('');
-
-              if (satTrans || hoTrans || munTrans || englishTrans) {
-                // Direct joint transcription + multi-target mother tongue translation from Bhashini!
-                setEnglishTranslation(englishTrans);
-                setSanthaliTranslation(satTrans);
-                setHoTranslation(hoTrans);
-                setMundariTranslation(munTrans);
-                setLatency(elapsedMs);
-
-                socket.emit('send-transcript', {
-                  roomCode,
-                  hindiText: recognizedHindi,
-                  santhali: satTrans,
-                  ho: hoTrans,
-                  mundari: munTrans,
-                  englishText: englishTrans,
-                  text: recognizedHindi,
-                  originalLang: 'hi',
-                  timestamp: Date.now()
-                });
-              } else {
-                // Fallback translation if needed
-                await handleProcessHindiSpeech(recognizedHindi, captureStartTime);
-              }
-            } else {
-              const detail = sttRes?.error ? ` (${sttRes.error})` : '';
-              setStatusMessage(`आवाज़ साफ़ नहीं पहचानी गई। कृपया माइक के पास दोबारा बोलें।${detail}`);
-              setTimeout(() => setStatusMessage(''), 5000);
-            }
-          }
-        );
-      } catch (err) {
-        console.error('Error stopping audio:', err);
-        setIsTranscribing(false);
-        setStatusMessage('ऑडियो प्रोसेस करने में समस्या आई। (Error processing audio.)');
-      } finally {
-        isActionInProgressRef.current = false;
-      }
+      isActionInProgressRef.current = false;
     }
   };
 
@@ -469,7 +438,7 @@ function TeacherDashboard() {
           <div className="mb-4">
             {isRecording ? (
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider animate-pulse">
-                <Radio className="w-4 h-4" /> 🔴 Recording Voice ({recordingSeconds}s) • Tap to Finish
+                <Radio className="w-4 h-4" /> 🔴 Recording Voice ({recordingSeconds}s) • Toggle to Stop
               </span>
             ) : isTranscribing ? (
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold text-xs uppercase tracking-wider animate-pulse">
@@ -492,7 +461,7 @@ function TeacherDashboard() {
                   ? 'bg-amber-500 opacity-80 cursor-wait'
                   : 'bg-emerald-500 hover:bg-emerald-600 ring-8 ring-emerald-50 dark:ring-emerald-950/50 hover:scale-105 active:scale-95'
             }`}
-            title={isRecording ? 'Click to stop and translate your voice' : 'Click to start speaking'}
+            title={isRecording ? 'Click to stop continuous translation' : 'Click to start continuous translation'}
           >
             {isTranscribing ? (
               <Loader2 className="w-16 h-16 text-white animate-spin" />
@@ -529,7 +498,7 @@ function TeacherDashboard() {
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-center max-w-md text-sm transition-colors">
             {isRecording
-              ? 'अपना वाक्य हिंदी में बोलें, फिर अनुवाद करने के लिए दोबारा बटन दबाएं।'
+              ? 'आप लगातार बोल सकते हैं। AI प्रत्येक वाक्य का अनुवाद बारी-बारी से करेगा।'
               : isTranscribing
                 ? 'कृपया प्रतीक्षा करें, Bhashini AI द्वारा हिंदी भाषण को संथाली, हो, मुण्डारी और अंग्रेजी में बदला जा रहा है...'
                 : 'माइक बटन दबाएं और हिंदी में बोलें। छात्र इसे तुरंत अपनी-अपनी मातृभाषा में सुनेंगे।'}
